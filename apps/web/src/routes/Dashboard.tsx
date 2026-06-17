@@ -136,6 +136,9 @@ export function Dashboard() {
   const [selectedNetworkId, setSelectedNetworkId] = useState<number | null>(null)
   const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null)
   const [showValue, setShowValue] = useState(true)
+  const [isValueLoading, setIsValueLoading] = useState(false)
+  const loadingStartRef = useRef<number>(0)
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data: networksData } = useQuery({
     queryKey: ['networks'],
@@ -155,7 +158,7 @@ export function Dashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quoteData])
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['balances', selectedNetworkId, selectedQuoteId],
     queryFn: () => {
       const params = new URLSearchParams()
@@ -166,6 +169,22 @@ export function Dashboard() {
     },
     refetchInterval: 30_000,
   })
+
+  useEffect(() => {
+    if (isFetching) {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current)
+      loadingStartRef.current = Date.now()
+      setIsValueLoading(true)
+    } else {
+      const elapsed = Date.now() - loadingStartRef.current
+      const remaining = Math.max(0, 200 - elapsed)
+      loadingTimerRef.current = setTimeout(() => setIsValueLoading(false), remaining)
+    }
+    return () => {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFetching])
 
   const networks = networksData?.networks ?? []
   const quoteSymbols = quoteData?.quoteSymbols ?? []
@@ -214,9 +233,11 @@ export function Dashboard() {
               </button>
             )}
           </div>
-          <div className="text-[30px] font-bold tracking-tight tabular-nums my-[6px]">
-            {showValue && totalValue !== undefined
-              ? <>$ {fmt(totalValue)}</>
+          <div className="text-[30px] font-bold tracking-tight tabular-nums my-[6px] flex items-center justify-center">
+            {showValue
+              ? isValueLoading && !isLoading
+                ? <div className="h-[36px] w-[140px] bg-[#e7eaed] rounded-[8px] animate-pulse" />
+                : totalValue !== undefined ? <>$ {fmt(totalValue)}</> : <>$ *****</>
               : <>$ *****</>
             }
           </div>

@@ -196,7 +196,7 @@ export async function txRoutes(app: FastifyInstance) {
         fromAddress: tx.fromAddress,
         toAddress: tx.toAddress,
         txHash: tx.txHash,
-        status: tx.status,
+        status: mapTxStatus(tx.status),
         fee: tx.fee ?? undefined,
         blockTime: tx.blockTime?.toISOString(),
         createdAt: tx.createdAt.toISOString(),
