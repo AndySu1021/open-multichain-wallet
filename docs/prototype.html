@@ -3,14 +3,14 @@
 <title>狐錢包 — Figma Prototype</title>
 <style>
   :root{
-    --mm-orange:#f6851b;        /* fox orange */
+    --mm-orange:#f6851b;
     --mm-orange-deep:#e2761b;
     --mm-blue:#037dd6;
-    --ink:#24272a;              /* near-black ink */
+    --ink:#24272a;
     --ink-2:#535a61;
     --line:#d6d9dc;
     --line-soft:#e7eaed;
-    --bg:#f2f4f6;               /* cool grey canvas */
+    --bg:#f2f4f6;
     --card:#ffffff;
     --green:#28a745;
     --red:#d73a49;
@@ -23,15 +23,15 @@
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);
     font-family:"Euclid Circular B","Segoe UI",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;}
-  /* ---- Figma stage chrome ---- */
-  .stage-head{max-width:1180px;margin:0 auto;padding:28px 24px 8px;}
+  /* ---- stage chrome ---- */
+  .stage-head{max-width:1360px;margin:0 auto;padding:28px 24px 8px;}
   .stage-head h1{font-size:20px;margin:0 0 2px;letter-spacing:-.01em;}
   .stage-head h1 b{color:var(--mm-orange-deep)}
   .stage-head p{margin:0;color:var(--ink-2);font-size:13px}
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-2)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:9px;height:9px;border-radius:50%}
-  .canvas{max-width:1180px;margin:0 auto;padding:20px 24px 80px;
+  .canvas{max-width:1360px;margin:0 auto;padding:20px 24px 80px;
     display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 28px;}
   .frame{display:flex;flex-direction:column}
   .frame-label{font-size:12px;color:var(--ink-2);margin:0 2px 8px;display:flex;justify-content:space-between;align-items:center}
@@ -46,15 +46,15 @@
   .screen{flex:1;overflow-y:auto;overflow-x:hidden}
   .screen::-webkit-scrollbar{width:0}
   .pad{padding:18px 18px 22px}
-  /* ---- nav header inside app ---- */
-  .apphead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line-soft)}
+  /* ---- app header ---- */
+  .apphead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
   .net{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);
     border-radius:999px;padding:5px 11px 5px 8px;font-size:12.5px;font-weight:600;cursor:pointer}
   .net .chip{width:18px;height:18px;border-radius:50%;display:inline-block}
   .net svg{width:11px;height:11px;opacity:.5}
   .avatar{width:30px;height:30px;border-radius:50%;
     background:conic-gradient(from 30deg,#f6851b,#ffc56e,#037dd6,#6b3fa0,#f6851b);cursor:pointer}
-  /* ---- typography helpers ---- */
+  /* ---- typography ---- */
   h2.t{font-size:18px;margin:0 0 14px;letter-spacing:-.01em}
   .muted{color:var(--ink-2)}
   .center{text-align:center}
@@ -75,6 +75,7 @@
   .field label{display:block;font-size:12.5px;font-weight:600;margin:0 0 6px;color:var(--ink-2)}
   .input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;background:#fff}
   .input:focus{outline:2px solid #f6851b40;border-color:var(--mm-orange)}
+  select.input{appearance:none;cursor:pointer}
   /* ---- social login ---- */
   .sbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
     border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;font-family:inherit}
@@ -83,36 +84,35 @@
   .divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--ink-2);font-size:12px}
   .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line-soft)}
   /* ---- balance card ---- */
-  .balance{background:linear-gradient(160deg,#fff 0%,#fff 60%);border:1px solid var(--line-soft);
-    border-radius:var(--radius);padding:20px 18px;text-align:center;box-shadow:var(--shadow)}
-  .balance .label{font-size:12px;color:var(--ink-2);font-weight:600;letter-spacing:.02em}
-  .balance .amt{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
-  .balance .delta{font-size:13px;font-weight:600;color:var(--green)}
-  .addr-pill{display:inline-flex;align-items:center;gap:7px;background:#f2f4f6;border-radius:999px;
-    padding:6px 12px;font-size:12px;color:var(--ink-2);margin-top:12px;cursor:pointer}
+  .balance{border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px 18px;text-align:center;box-shadow:var(--shadow);margin-bottom:16px}
+  .balance .label-row{display:flex;align-items:center;justify-content:center;gap:6px}
+  .balance .label{font-size:12px;color:var(--ink-2);font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+  .balance .amt{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:6px 0 10px;font-variant-numeric:tabular-nums}
+  .quote-pills{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+  .pill{font-size:11.5px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer}
+  .pill.on{background:var(--mm-orange);color:#fff;border-color:var(--mm-orange)}
+  /* ---- action icons ---- */
   .actions{display:flex;justify-content:space-between;gap:8px;margin:16px 0 4px}
   .act{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
   .act .ic{width:46px;height:46px;border-radius:50%;background:var(--mm-orange);color:#fff;
-    display:flex;align-items:center;justify-content:center}
+    display:flex;align-items:center;justify-content:center;font-size:18px}
   .act .ic.alt{background:#fff;border:1px solid var(--line);color:var(--ink)}
   .act span{font-size:12px;font-weight:600}
-  .act.disabled{opacity:.38;cursor:not-allowed;pointer-events:none;position:relative}
-  .act.disabled span::after{content:"即將推出";position:absolute;left:0;right:0;bottom:-13px;font-size:8.5px;font-weight:600;color:var(--ink-2)}
+  .act.disabled{opacity:.40;cursor:not-allowed;pointer-events:none}
+  /* ---- section header ---- */
+  .sec-head{font-size:15px;font-weight:700;color:var(--ink);margin:12px 0 8px 2px}
   /* ---- token list ---- */
-  .tabs{display:flex;gap:4px;margin:18px 0 10px;border-bottom:1px solid var(--line-soft)}
-  .tab{padding:9px 4px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;margin-right:18px}
-  .tab.on{color:var(--ink);border-color:var(--mm-orange)}
   .row{display:flex;align-items:center;gap:12px;padding:11px 2px;cursor:pointer;border-radius:10px}
   .row:hover{background:#fafbfc}
   .coin{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;flex:0 0 auto}
   .coin.btc{background:#f7931a}.coin.eth{background:#627eea}.coin.xrp{background:#23292f}
-  .coin.usdc{background:#2775ca}.coin.usdt{background:#26a17b}
+  .coin.usdc{background:#2775ca}.coin.usdt{background:#26a17b}.coin.bnb{background:#f0b90b}
   .row .nm{flex:1;min-width:0}
   .row .nm b{display:block;font-size:14px}
   .row .nm small{color:var(--ink-2);font-size:12px}
   .row .vl{text-align:right}
   .row .vl b{display:block;font-size:14px;font-variant-numeric:tabular-nums}
-  .row .vl small{color:var(--ink-2);font-size:12px}
+  .row .vl small{color:var(--ink-2);font-size:12px;font-variant-numeric:tabular-nums}
   /* ---- bottom nav ---- */
   .botnav{display:flex;border-top:1px solid var(--line-soft);background:#fff;flex:0 0 auto}
   .botnav a{flex:1;text-align:center;padding:10px 0 12px;font-size:10.5px;color:var(--ink-2);cursor:pointer;text-decoration:none}
@@ -130,34 +130,35 @@
   .summary{background:#fafbfc;border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin:14px 0;font-size:13px}
   .summary div{display:flex;justify-content:space-between;padding:5px 0}
   .summary div span:last-child{font-weight:600;font-variant-numeric:tabular-nums}
+  /* ---- tabs (history) ---- */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line-soft);margin-bottom:10px}
+  .tab-btn{padding:9px 4px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-right:18px;font-family:inherit}
+  .tab-btn.on{color:var(--ink);border-color:var(--mm-orange)}
   /* ---- tx history ---- */
-  .daygroup{font-size:12px;font-weight:600;color:var(--ink-2);margin:16px 0 6px}
-  .tx{display:flex;align-items:center;gap:12px;padding:11px 2px;cursor:pointer}
-  .tx .ti{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#f2f4f6;flex:0 0 auto}
+  .daygroup{font-size:12px;font-weight:600;color:var(--ink-2);margin:14px 0 6px}
+  .tx{display:flex;align-items:center;gap:12px;padding:11px 2px;cursor:pointer;border-radius:10px}
+  .tx:hover{background:#fafbfc}
+  .tx .ti{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .tx .info{flex:1}.tx .info b{display:block;font-size:13.5px}.tx .info small{color:var(--ink-2);font-size:11.5px}
-  .tx .val{text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:600}
+  .tx .val{text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:600;flex-shrink:0}
   .tx .val.out{color:var(--ink)}.tx .val.in{color:var(--green)}
   .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:#e9f7ee;color:var(--green)}
   .badge.pend{background:#fff4e5;color:#b06a00}
-  /* network sheet */
-  .sheet-net .row .coin{font-size:12px}
-  /* toggle switch */
+  /* ---- settings rows ---- */
   .tg{width:40px;height:23px;border-radius:999px;background:var(--line);position:relative;transition:background .18s ease;flex:0 0 auto}
   .tg span{position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .18s ease}
   .tg.on{background:var(--green)}
   .tg.on span{left:19px}
-  /* connectors */
-  .flowline{display:none}
 </style>
 
 <div class="stage-head">
-  <h1>🦊 <b>狐錢包</b> WebWallet — 互動原型 <span style="font-weight:400;color:var(--ink-2);font-size:14px">v0.1 / 託管式</span></h1>
+  <h1>🦊 <b>狐錢包</b> WebWallet — 互動原型 <span style="font-weight:400;color:var(--ink-2);font-size:14px">v0.2 / 託管式</span></h1>
   <p>可點擊的 Figma 風原型。點任何按鈕都會跳到對應畫面；橘色 = 主要動作。這是設計稿，非真實錢包。</p>
   <div class="legend">
     <span><i class="dot" style="background:var(--mm-orange)"></i>主要 CTA</span>
     <span><i class="dot" style="background:var(--ink)"></i>次要動作</span>
     <span><i class="dot" style="background:var(--line)"></i>導覽 / 返回</span>
-    <span class="muted">提示：點底部導覽列可在 Dashboard / 紀錄 間切換</span>
+    <span class="muted">提示：點底部導覽列可切換首頁 / 交易 / 收款 / 我的</span>
   </div>
 </div>
 
@@ -166,48 +167,46 @@
 <script>
 /* ---------- shared chrome ---------- */
 const topbar = `<div class="topbar"><i></i><i></i><i></i></div>`;
-const net = (name,cls) => `<div class="net" onclick="go('s_network')"><span class="chip coin ${cls}" style="width:18px;height:18px"></span>${name}<svg viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg></div>`;
-const apphead = (n,c)=>`<div class="apphead">${net(n,c)}<div class="avatar" onclick="go('s_account')"></div></div>`;
-const botnav = (active)=>`<div class="botnav">
-  <a class="${active==='home'?'on':''}" onclick="go('s_dashboard')">${ic_home}首頁</a>
-  <a class="${active==='tx'?'on':''}" onclick="go('s_history')">${ic_clock}紀錄</a>
-  <a onclick="go('s_receive')">${ic_qr}收款</a>
-  <a onclick="go('s_account')">${ic_user}我的</a>
-</div>`;
 
-/* tiny inline icons */
+function netPill(name, colorStyle){
+  return `<div class="net" onclick="go('s_network')">
+    <span class="chip" style="width:18px;height:18px;${colorStyle}"></span>
+    ${name}
+    <svg viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+  </div>`;
+}
+const apphead = (label, colorStyle) =>
+  `<div class="apphead">${netPill(label, colorStyle)}<div class="avatar" onclick="go('s_account')"></div></div>`;
+
+function botnav(active){
+  return `<div class="botnav">
+    <a class="${active==='home'?'on':''}" onclick="go('s_dashboard')">${ic_home}首頁</a>
+    <a class="${active==='tx'?'on':''}" onclick="go('s_history')">${ic_clock}交易</a>
+    <a class="${active==='recv'?'on':''}" onclick="go('s_receive')">${ic_qr}收款</a>
+    <a class="${active==='acct'?'on':''}" onclick="go('s_account')">${ic_user}我的</a>
+  </div>`;
+}
+
+/* icons */
 const ic_home=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>`;
 const ic_clock=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
 const ic_qr=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-7"/></svg>`;
 const ic_user=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`;
-const ic_send=`<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-const ic_recv=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`;
+const ic_eye=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ic_eye_off=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+const ic_send_up=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+const ic_recv_dn=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`;
 const ic_buy=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>`;
 const ic_swap=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10 4 7l3-3M4 7h13M17 14l3 3-3 3M20 17H7"/></svg>`;
+const ic_send_orange=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--mm-orange-deep)" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+const ic_recv_green=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`;
 const gGoogle=`<svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.2-.1-2.3-.3-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 7 29.4 5 24 5 16.3 5 9.7 9.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 35 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.6l-6.5 5C9.6 39.7 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.5l6.3 5.3C40.7 35.9 44 30.5 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg>`;
 
-/* icons used inside screen templates — must be defined before screens are built */
-const ic_send_ink=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--mm-orange-deep)" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-const ic_recv_ink=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`;
-const ic_swap_ink=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="2"><path d="M7 10 4 7l3-3M4 7h13M17 14l3 3-3 3M20 17H7"/></svg>`;
-
-/* ---------- SCREENS ---------- */
+/* ========== SCREENS ========== */
 const S = {};
 
-/* 1. Welcome */
-S.s_welcome = {label:"01 · 歡迎 / 入口", html:`
-${topbar}
-<div class="screen"><div class="pad center" style="display:flex;flex-direction:column;height:100%;justify-content:center">
-  <div style="font-size:64px;margin-bottom:6px">🦊</div>
-  <h2 class="t" style="font-size:24px;margin-bottom:6px">狐錢包</h2>
-  <p class="muted" style="margin:0 0 32px;font-size:14px">一個錢包，管理 BTC · ETH · ERC20 · XRP</p>
-  <button class="btn btn-primary" onclick="go('s_login')">開始使用</button>
-  <button class="btn btn-ghost" style="margin-top:10px" onclick="go('s_login')">我已有帳號</button>
-  <p class="muted" style="font-size:11px;margin-top:28px;line-height:1.5">託管式錢包 · 私鑰由平台安全保管<br>登入即代表同意服務條款</p>
-</div></div>`};
-
-/* 2. Login */
-S.s_login = {label:"02 · 登入 / 註冊", html:`
+/* 01 · Login */
+S.s_login = {label:"01 · 登入 / 註冊", html:`
 ${topbar}
 <div class="screen"><div class="pad">
   <div style="font-size:40px;margin:6px 0 12px">🦊</div>
@@ -218,183 +217,307 @@ ${topbar}
   <div class="field"><label>Email</label><input class="input" placeholder="you@example.com"></div>
   <div class="field"><label>密碼</label><input class="input" type="password" placeholder="••••••••"></div>
   <button class="btn btn-primary" onclick="go('s_loading')">登入</button>
-  <p class="center muted" style="font-size:12.5px;margin-top:16px">還沒有帳號？<b style="color:var(--mm-orange-deep);cursor:pointer">註冊</b> · <span style="cursor:pointer">忘記密碼</span></p>
+  <p class="center muted" style="font-size:12.5px;margin-top:16px">還沒有帳號？<b style="color:var(--mm-orange-deep);cursor:pointer" onclick="go('s_register')">註冊</b></p>
   <div class="warn" style="margin-top:18px">🔒 託管式設計：你不需要保管助記詞，帳號還原透過 email 驗證。資產安全由平台負責。</div>
 </div></div>`};
 
-/* 2b. loading */
-S.s_loading = {label:"02b · 驗證中", html:`
+/* 01b · Register */
+S.s_register = {label:"01b · 註冊", html:`
+${topbar}
+<div class="screen"><div class="pad">
+  <div style="font-size:40px;margin:6px 0 12px">🦊</div>
+  <h2 class="t">建立帳號</h2>
+  <div class="sbtn" onclick="go('s_loading')">${gGoogle}使用 Google 註冊</div>
+  <div class="divider">或用 email</div>
+  <div class="field"><label>Email</label><input class="input" placeholder="you@example.com"></div>
+  <div class="field"><label>密碼</label><input class="input" type="password" placeholder="至少 8 個字元"></div>
+  <div class="field"><label>確認密碼</label><input class="input" type="password" placeholder="再輸入一次"></div>
+  <button class="btn btn-primary" onclick="go('s_loading')">建立帳號</button>
+  <p class="center muted" style="font-size:12.5px;margin-top:16px">已有帳號？<b style="color:var(--mm-orange-deep);cursor:pointer" onclick="go('s_login')">登入</b></p>
+</div></div>`};
+
+/* 01c · Loading */
+S.s_loading = {label:"01c · 驗證中", html:`
 ${topbar}
 <div class="screen"><div class="pad center" style="display:flex;flex-direction:column;height:100%;justify-content:center;gap:16px">
   <div class="avatar" style="width:54px;height:54px;margin:0 auto;animation:spin 1.1s linear infinite"></div>
   <p style="font-weight:600">正在驗證並準備你的錢包…</p>
-  <p class="muted" style="font-size:12px">建立安全連線 · 同步四條鏈的餘額</p>
+  <p class="muted" style="font-size:12px">建立安全連線 · 同步各鏈餘額</p>
   <button class="btn btn-ghost btn-sm" style="width:auto;margin:8px auto 0;padding:8px 20px" onclick="go('s_dashboard')">▶ 模擬完成（進入 App）</button>
 </div></div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`};
 
-/* 3. Dashboard */
-S.s_dashboard = {label:"03 · 資產總覽 Dashboard", html:`
-${topbar}${apphead('全部網路','eth')}
+/* 02 · Dashboard */
+S.s_dashboard = {label:"02 · 資產總覽 Dashboard", html:`
+${topbar}
+${apphead('全部網路','background:#627eea;border-radius:50%')}
 <div class="screen"><div class="pad">
+  <!-- Balance card -->
   <div class="balance">
-    <div class="label">總資產估值</div>
-    <div class="amt">$48,213.90</div>
-    <div class="delta">▲ $1,204.52 (2.56%) 今日</div>
-    <div class="addr-pill" onclick="go('s_receive')">🦊 0xA4f1…9bE2 <span style="font-size:13px">⧉</span></div>
+    <div class="label-row">
+      <span class="label">總資產</span>
+      <span style="color:var(--ink-2);cursor:pointer;display:flex">${ic_eye}</span>
+    </div>
+    <div class="amt">$ 48,213.90</div>
+    <div class="quote-pills">
+      <button class="pill on">USDT</button>
+      <button class="pill">USD</button>
+    </div>
   </div>
+  <!-- Actions -->
   <div class="actions">
-    <div class="act" onclick="go('s_send')"><div class="ic">${ic_send}</div><span>Send</span></div>
-    <div class="act" onclick="go('s_receive')"><div class="ic alt">${ic_recv}</div><span>Receive</span></div>
-    <div class="act disabled"><div class="ic alt">${ic_buy}</div><span>Buy</span></div>
-    <div class="act disabled"><div class="ic alt">${ic_swap}</div><span>Swap</span></div>
+    <div class="act" onclick="go('s_send')">
+      <div class="ic">↑</div>
+      <span>發送</span>
+    </div>
+    <div class="act" onclick="go('s_receive')">
+      <div class="ic alt">↓</div>
+      <span>接收</span>
+    </div>
+    <div class="act disabled">
+      <div class="ic alt">+</div>
+      <span>購買</span>
+    </div>
+    <div class="act disabled">
+      <div class="ic alt">⇄</div>
+      <span>閃兌</span>
+    </div>
   </div>
-  <div class="tabs"><div class="tab on">代幣</div><div class="tab" onclick="go('s_history')">活動</div></div>
-  ${tokenRow('btc','BTC','Bitcoin','0.412 BTC','$28,140.00','+1.9%')}
-  ${tokenRow('eth','ETH','Ethereum','4.83 ETH','$15,620.40','+3.1%')}
-  ${tokenRow('usdc','USDC','USD Coin · ERC20','3,200 USDC','$3,200.00','0.0%')}
-  ${tokenRow('usdt','USDT','Tether · ERC20','—','$0.00','')}
-  ${tokenRow('xrp','XRP','XRP Ledger','1,540 XRP','$1,253.50','-0.7%')}
+  <!-- Token list -->
+  <div class="sec-head">代幣</div>
+  ${tokenRow('eth','ETH','Ethereum','4.830','$ 8,507.91')}
+  ${tokenRow('btc','BTC','Bitcoin','0.412','$ 26,627.37')}
+  ${tokenRow('xrp','XRP','XRP Ledger','1,540','$ 1,837.33')}
+  ${tokenRow('bnb','BNB','Binance Smart Chain','3.5','$ 2,113.25')}
+  ${tokenRow('usdt','USDT','Ethereum','3,200','$ 3,200.00')}
+  ${tokenRow('usdc','USDC','Ethereum','1,500','$ 1,501.35')}
+  ${tokenRow('usdt','USDT','Binance Smart Chain','2,000','$ 2,000.00')}
 </div></div>
 ${botnav('home')}`};
 
-/* 4. Send – step address/amount */
-S.s_send = {label:"04 · Send（金額 / 收款人）", html:`
+/* 03 · Send */
+S.s_send = {label:"03 · 傳送（資產 / 地址 / 金額）", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_dashboard')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>返回</div><b style="font-size:15px">傳送</b><span style="width:30px"></span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_dashboard')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+    返回
+  </div>
+  <b style="font-size:15px">傳送</b>
+  <span style="width:48px"></span>
+</div>
 <div class="screen"><div class="pad">
-  <div class="field"><label>網路（鏈）</label>
-    <div class="net-pick" onclick="go('s_network')"><span class="coin eth" style="width:26px;height:26px;font-size:11px">Ξ</span><div style="flex:1"><b style="font-size:14px">Ethereum</b><br><small class="muted">ERC20 代幣也走這條</small></div><svg viewBox="0 0 12 12" width="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div>
+  <div class="field"><label>資產</label>
+    <div class="net-pick">
+      <div class="coin usdt" style="width:26px;height:26px;font-size:10px">UT</div>
+      <div style="flex:1"><b style="font-size:14px">USDT</b></div>
+      <svg viewBox="0 0 12 12" width="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+    </div>
+  </div>
+  <div class="field"><label>網路</label>
+    <div class="net-pick">
+      <span style="width:26px;height:26px;border-radius:50%;background:#627eea;display:inline-block;flex-shrink:0"></span>
+      <div style="flex:1"><b style="font-size:14px">Ethereum</b><br><small class="muted">ERC20</small></div>
+      <svg viewBox="0 0 12 12" width="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+    </div>
   </div>
   <div class="field"><label>收款地址</label><input class="input" placeholder="0x… 或貼上 / 掃描"></div>
-  <div class="field"><label>資產</label>
-    <div class="net-pick"><span class="coin eth" style="width:26px;height:26px;font-size:11px">Ξ</span><div style="flex:1"><b style="font-size:14px">ETH</b></div><span class="muted" style="font-size:12px">餘額 4.83</span></div>
-  </div>
   <div class="field"><label>金額</label>
-    <input class="input" placeholder="0.0" style="font-size:22px;font-weight:700">
-    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px" class="muted"><span>≈ $0.00 USD</span><b style="color:var(--mm-orange-deep);cursor:pointer">最大</b></div>
+    <input class="input" placeholder="0.00" style="font-size:22px;font-weight:700">
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px" class="muted">
+      <span>≈ $ 0.00</span>
+      <b style="color:var(--mm-orange-deep);cursor:pointer">最大（餘額 3,200）</b>
+    </div>
   </div>
-  <div class="warn">⚠ 跨鏈提醒：ETH/ERC20 地址與 BTC、XRP 不相容。請確認地址屬於所選網路，轉錯將無法找回。</div>
+  <div class="warn">⚠ 跨鏈提醒：請確認地址屬於所選網路，轉錯將無法找回。</div>
   <button class="btn btn-primary" style="margin-top:16px" onclick="go('s_send_confirm')">下一步</button>
 </div></div>`};
 
-/* 4b. Send confirm */
-S.s_send_confirm = {label:"04b · Send 確認", html:`
+/* 03b · Send Confirm */
+S.s_send_confirm = {label:"03b · 傳送確認", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_send')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>返回</div><b style="font-size:15px">確認交易</b><span style="width:30px"></span></div>
-<div class="screen"><div class="pad center">
-  <div class="coin eth" style="width:56px;height:56px;margin:14px auto 10px;font-size:20px">Ξ</div>
-  <div style="font-size:30px;font-weight:700">0.75 ETH</div>
-  <p class="muted" style="margin:4px 0 18px">≈ $2,425.30 USD</p>
-  <div class="summary" style="text-align:left">
-    <div><span class="muted">從</span><span>🦊 0xA4f1…9bE2</span></div>
-    <div><span class="muted">至</span><span>0x7C3d…41Ad</span></div>
-    <div><span class="muted">網路</span><span>Ethereum</span></div>
-    <div><span class="muted">礦工費（預估）</span><span>$3.12</span></div>
-    <div style="border-top:1px solid var(--line-soft);margin-top:4px;padding-top:9px"><span>總計</span><span>$2,428.42</span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_send')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+    返回
   </div>
-  <button class="btn btn-primary" onclick="go('s_send_done')">滑動確認傳送</button>
+  <b style="font-size:15px">確認交易</b>
+  <span style="width:48px"></span>
+</div>
+<div class="screen"><div class="pad center">
+  <div class="coin usdt" style="width:56px;height:56px;margin:14px auto 10px;font-size:16px">UT</div>
+  <div style="font-size:30px;font-weight:700">1,000 USDT</div>
+  <p class="muted" style="margin:4px 0 18px;font-size:13px">≈ $ 1,000.00</p>
+  <div class="summary" style="text-align:left">
+    <div><span class="muted">網路</span><span>Ethereum</span></div>
+    <div><span class="muted">至</span><span>0x7C3d…41Ad</span></div>
+    <div><span class="muted">礦工費（預估）</span><span>$3.12</span></div>
+    <div><span class="muted">預估時間</span><span>~30s</span></div>
+    <div style="border-top:1px solid var(--line-soft);margin-top:4px;padding-top:9px"><span>總計</span><span>$1,003.12</span></div>
+  </div>
+  <button class="btn btn-primary" onclick="go('s_send_done')">確認傳送</button>
   <button class="btn btn-ghost" style="margin-top:10px" onclick="go('s_send')">取消</button>
 </div></div>`};
 
-/* 4c. Send done */
-S.s_send_done = {label:"04c · 傳送完成", html:`
+/* 03c · Send Done */
+S.s_send_done = {label:"03c · 傳送完成", html:`
 ${topbar}
 <div class="screen"><div class="pad center" style="display:flex;flex-direction:column;height:100%;justify-content:center;gap:6px">
   <div style="width:72px;height:72px;border-radius:50%;background:#e9f7ee;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:34px">✓</div>
   <h2 class="t" style="font-size:20px;margin:0">交易已送出</h2>
-  <p class="muted" style="margin:2px 0 4px">0.75 ETH 已廣播至 Ethereum 網路</p>
-  <span class="badge pend" style="margin:0 auto 18px">● 確認中</span>
+  <p class="muted" style="margin:2px 0 4px">1,000 USDT 已廣播至 Ethereum 網路</p>
+  <span class="badge pend" style="margin:0 auto 18px;display:block;width:fit-content">● 確認中</span>
   <button class="btn btn-dark" onclick="go('s_tx_detail')">查看交易詳情</button>
   <button class="btn btn-ghost" style="margin-top:10px" onclick="go('s_dashboard')">回到首頁</button>
 </div></div>`};
 
-/* 5. Receive */
-S.s_receive = {label:"05 · Receive（收款）", html:`
+/* 04 · Receive */
+S.s_receive = {label:"04 · 收款（Receive）", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_dashboard')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>返回</div><b style="font-size:15px">收款</b><span style="width:30px"></span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_dashboard')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+    返回
+  </div>
+  <b style="font-size:15px">收款</b>
+  <span style="width:48px"></span>
+</div>
 <div class="screen"><div class="pad center">
-  <div class="net-pick" style="text-align:left" onclick="go('s_network')"><span class="coin eth" style="width:26px;height:26px;font-size:11px">Ξ</span><div style="flex:1"><b style="font-size:14px">Ethereum</b><br><small class="muted">切換網路會改變地址</small></div><svg viewBox="0 0 12 12" width="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div>
+  <div class="net-pick" style="text-align:left" onclick="go('s_network')">
+    <span style="width:26px;height:26px;border-radius:50%;background:#627eea;display:inline-block;flex-shrink:0"></span>
+    <div style="flex:1"><b style="font-size:14px">Ethereum</b><br><small class="muted">切換網路會改變地址</small></div>
+    <svg viewBox="0 0 12 12" width="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+  </div>
   <div class="qr"></div>
   <p class="muted" style="font-size:12px;margin:0 0 4px">你的 Ethereum 地址</p>
-  <div style="font-weight:600;word-break:break-all;font-size:14px;padding:0 10px">0xA4f1c9D2e8B3a7F45c1d0E9bE2</div>
+  <div style="font-weight:600;word-break:break-all;font-size:13px;padding:0 10px">0xA4f1c9D2e8B3a7F45c1d0E9bE2</div>
   <div class="btn-row" style="margin-top:18px">
     <button class="btn btn-ghost btn-sm">⧉ 複製</button>
     <button class="btn btn-ghost btn-sm">↗ 分享</button>
   </div>
   <div class="warn" style="margin-top:18px;text-align:left">⚠ 僅傳送 <b>Ethereum / ERC20</b> 資產到此地址。傳入 BTC 或 XRP 將永久遺失。</div>
 </div></div>
-${botnav()}`};
+${botnav('recv')}`};
 
-/* 6. History */
-S.s_history = {label:"06 · 交易紀錄", html:`
-${topbar}${apphead('全部網路','eth')}
+/* 05 · History */
+S.s_history = {label:"05 · 交易紀錄", html:`
+${topbar}
+<div class="apphead" style="flex:0 0 auto">
+  <span style="width:24px"></span>
+  <b style="font-size:15px">交易</b>
+  <span style="width:24px"></span>
+</div>
 <div class="screen"><div class="pad">
-  <h2 class="t" style="margin-bottom:4px">活動</h2>
-  <div class="tabs"><div class="tab on">全部</div><div class="tab">傳送</div><div class="tab">接收</div></div>
+  <!-- Type tabs -->
+  <div class="tabs">
+    <button class="tab-btn on">全部</button>
+    <button class="tab-btn">傳送</button>
+    <button class="tab-btn">接收</button>
+  </div>
+  <!-- Filters -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <select class="input" style="flex:1;font-size:12.5px;font-weight:600;padding:7px 10px">
+      <option>全部網路</option>
+      <option>Ethereum</option>
+      <option>Bitcoin</option>
+      <option>XRP Ledger</option>
+      <option>Binance Smart Chain</option>
+    </select>
+    <select class="input" style="flex:1;font-size:12.5px;font-weight:600;padding:7px 10px">
+      <option>全部代幣</option>
+      <option>ETH</option>
+      <option>BTC</option>
+      <option>XRP</option>
+      <option>BNB</option>
+      <option>USDT</option>
+      <option>USDC</option>
+    </select>
+  </div>
+  <!-- List -->
   <div class="daygroup">今天</div>
-  ${tx('send','傳送 ETH','至 0x7C3d…41Ad · Ethereum','-0.75 ETH','out','pend','確認中')}
-  ${tx('recv','接收 USDC','來自 0x19aB…77Cc · ERC20','+1,200 USDC','in','ok','已完成')}
+  ${txRow('send','傳送 USDT','Ethereum · 至 0x7C3d…41Ad','-1,000 USDT','out','pend','確認中')}
+  ${txRow('recv','接收 ETH','Ethereum · 來自 0x19aB…77Cc','+1.5 ETH','in','ok','已完成')}
   <div class="daygroup">昨天</div>
-  ${tx('recv','接收 BTC','來自 bc1q…4f8z · Bitcoin','+0.05 BTC','in','ok','已完成')}
-  ${tx('send','傳送 XRP','至 rPb3…9xQ2 · XRP Ledger','-300 XRP','out','ok','已完成')}
+  ${txRow('recv','接收 BTC','Bitcoin · 來自 bc1q…4f8z','+0.05 BTC','in','ok','已完成')}
+  ${txRow('send','傳送 XRP','XRP Ledger · 至 rPb3…9xQ2','-300 XRP','out','ok','已完成')}
   <div class="daygroup">6 月 12 日</div>
-  ${tx('swap','兌換','ETH → USDC · Ethereum','—','out','ok','已完成')}
-  ${tx('send','傳送 ETH','至 0x88dF…0a13 · Ethereum','-1.20 ETH','out','ok','已完成')}
+  ${txRow('send','傳送 BNB','Binance Smart Chain · 至 0x44aC…2f11','-1.2 BNB','out','ok','已完成')}
+  ${txRow('recv','接收 USDT','Binance Smart Chain · 來自 0x88dF…0a13','+500 USDT','in','ok','已完成')}
 </div></div>
 ${botnav('tx')}`};
 
-/* 6b. TX detail */
-S.s_tx_detail = {label:"06b · 交易詳情", html:`
+/* 05b · TX Detail */
+S.s_tx_detail = {label:"05b · 交易詳情", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_history')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>返回</div><b style="font-size:15px">交易詳情</b><span style="width:30px"></span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_history')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+    返回
+  </div>
+  <b style="font-size:15px">交易詳情</b>
+  <span style="width:48px"></span>
+</div>
 <div class="screen"><div class="pad center">
-  <div class="tx" style="justify-content:center"><div class="ti" style="background:#fdeee0">${ic_send_ink}</div></div>
-  <div style="font-size:26px;font-weight:700;margin-top:4px">-0.75 ETH</div>
-  <span class="badge pend" style="margin:8px auto 18px">● 確認中 (1/12)</span>
+  <div class="tx" style="justify-content:center;padding:14px 0 6px">
+    <div class="ti" style="width:48px;height:48px;background:#fdeee0">${ic_send_orange}</div>
+  </div>
+  <div style="font-size:26px;font-weight:700">-1,000 USDT</div>
+  <span class="badge pend" style="margin:8px auto 18px;display:block;width:fit-content">● 確認中</span>
   <div class="summary" style="text-align:left">
     <div><span class="muted">類型</span><span>傳送</span></div>
+    <div><span class="muted">資產</span><span>USDT</span></div>
     <div><span class="muted">網路</span><span>Ethereum</span></div>
     <div><span class="muted">至</span><span>0x7C3d…41Ad</span></div>
-    <div><span class="muted">時間</span><span>2026/06/16 14:22</span></div>
-    <div><span class="muted">礦工費</span><span>0.00098 ETH ($3.12)</span></div>
-    <div><span class="muted">Nonce</span><span>148</span></div>
+    <div><span class="muted">時間</span><span>2026/06/17 14:22</span></div>
+    <div><span class="muted">礦工費</span><span>$3.12</span></div>
   </div>
   <button class="btn btn-ghost" onclick="go('s_history')">在區塊鏈瀏覽器查看 ↗</button>
 </div></div>`};
 
-/* 7. Network picker sheet */
-S.s_network = {label:"07 · 切換網路", html:`
+/* 06 · Network Picker */
+S.s_network = {label:"06 · 切換網路", html:`
 ${topbar}
-<div class="apphead"><b style="font-size:15px">選擇網路</b><div class="net" onclick="go('s_dashboard')" style="border:none;background:none;padding:0">✕</div></div>
-<div class="screen sheet-net"><div class="pad">
-  <input class="input" placeholder="🔍 搜尋網路" style="margin-bottom:8px">
-  <div class="daygroup">主網路</div>
-  ${netRow('btc','Bitcoin','BTC · 原生鏈','✓')}
-  ${netRow('eth','Ethereum','ETH · ERC20 代幣','')}
-  ${netRow('xrp','XRP Ledger','XRP · 原生鏈','')}
-  <div class="warn" style="margin-top:14px">不同鏈地址互不相通。切換網路後，收款地址與可用資產會跟著改變。ERC20 代幣（USDC、USDT 等）會在 Ethereum 網路下顯示。</div>
+<div class="apphead" style="flex:0 0 auto">
+  <b style="font-size:15px">選擇網路</b>
+  <div style="cursor:pointer;font-size:18px;color:var(--ink-2)" onclick="go('s_dashboard')">✕</div>
+</div>
+<div class="screen"><div class="pad">
+  <input class="input" placeholder="🔍 搜尋網路" style="margin-bottom:12px">
+  ${netRow('eth','Ethereum','ERC20 · ETH / USDT / USDC','background:#627eea','Ξ','✓')}
+  ${netRow('btc','Bitcoin','BTC · 原生鏈','background:#f7931a','₿','')}
+  ${netRow('xrp','XRP Ledger','XRP · 原生鏈','background:#23292f','✕','')}
+  ${netRow('bnb','Binance Smart Chain','BEP20 · BNB / USDT','background:#f0b90b','BN','')}
+  <div class="warn" style="margin-top:14px">不同鏈地址互不相通。切換網路後，收款地址與可用資產會跟著改變。ERC20（USDC、USDT 等）在 Ethereum 網路下顯示；BEP20（USDT 等）在 Binance Smart Chain 下顯示。</div>
 </div></div>`};
 
-/* 8. Account / settings */
-S.s_account = {label:"08 · 我的帳號 / 設定", html:`
+/* 07 · Account */
+S.s_account = {label:"07 · 我的帳號", html:`
 ${topbar}
-<div class="apphead"><b style="font-size:15px">我的</b><div class="net" onclick="go('s_dashboard')" style="border:none;background:none;padding:0">✕</div></div>
+<div class="apphead" style="flex:0 0 auto">
+  <b style="font-size:15px">我的</b>
+  <span style="width:24px"></span>
+</div>
 <div class="screen"><div class="pad">
-  <div class="center" style="margin:6px 0 18px">
+  <div class="center" style="margin:6px 0 22px">
     <div class="avatar" style="width:64px;height:64px;margin:0 auto 10px"></div>
-    <b style="font-size:16px">user@example.com</b><br>
-    <span class="addr-pill" style="margin-top:8px">🦊 0xA4f1…9bE2 ⧉</span>
+    <b style="font-size:15px">user@example.com</b>
   </div>
   ${setRow('🔐','安全與登入','Google 已連結 · 變更密碼','s_security')}
   ${setRow('❓','支援與說明','常見問題 · 聯絡客服','s_support')}
-  <button class="btn btn-ghost" style="margin-top:18px;color:var(--red);border-color:#f1d4d6" onclick="go('s_welcome')">登出</button>
-</div></div>`};
+  <button class="btn btn-ghost" style="margin-top:24px;color:var(--red);border-color:#f1d4d6" onclick="go('s_login')">登出</button>
+</div></div>
+${botnav('acct')}`};
 
-/* 09. Security & login */
-S.s_security = {label:"09 · 安全與登入", html:`
+/* 08 · Security */
+S.s_security = {label:"08 · 安全與登入", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_account')" style="border:none;background:none;padding:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></div><b style="font-size:15px">安全與登入</b><span style="width:24px"></span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_account')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+  </div>
+  <b style="font-size:15px">安全與登入</b>
+  <span style="width:24px"></span>
+</div>
 <div class="screen"><div class="pad">
   <div class="daygroup">登入方式</div>
   <div class="row" style="cursor:default">
@@ -412,69 +535,77 @@ ${topbar}
   ${toggleRow('📱','雙重驗證 (2FA)','以驗證 App 產生動態碼',true)}
   ${toggleRow('👆','生物辨識解鎖','Face ID / 指紋',true)}
   ${toggleRow('⏱','自動鎖定','閒置 5 分鐘後鎖定',true)}
-  <div class="daygroup" style="margin-top:18px">登入裝置</div>
-  <div class="row" style="cursor:default"><div class="ti" style="width:36px;height:36px;border-radius:9px;background:#f2f4f6;display:flex;align-items:center;justify-content:center">💻</div><div class="nm" style="margin-left:10px"><b>MacBook Pro · Chrome</b><small>台北 · 目前裝置</small></div><span class="badge">使用中</span></div>
-  <div class="row" style="cursor:pointer"><div class="ti" style="width:36px;height:36px;border-radius:9px;background:#f2f4f6;display:flex;align-items:center;justify-content:center">📱</div><div class="nm" style="margin-left:10px"><b>iPhone 15 · App</b><small>台北 · 2 小時前</small></div><span style="color:var(--red);font-size:12px;font-weight:600">登出</span></div>
-  <div class="warn" style="margin-top:14px">🔒 託管式錢包：私鑰由平台保管，帳號還原透過 Google / email 驗證，無需助記詞。</div>
+  <div class="warn" style="margin-top:16px">🔒 託管式錢包：私鑰由平台保管，帳號還原透過 Google / email 驗證，無需助記詞。</div>
 </div></div>`};
 
-/* 11. Support */
-S.s_support = {label:"11 · 支援與說明", html:`
+/* 09 · Support */
+S.s_support = {label:"09 · 支援與說明", html:`
 ${topbar}
-<div class="apphead"><div class="net" onclick="go('s_account')" style="border:none;background:none;padding:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></div><b style="font-size:15px">支援與說明</b><span style="width:24px"></span></div>
+<div class="apphead" style="flex:0 0 auto">
+  <div class="net" style="border:none;background:none;padding:0;cursor:pointer" onclick="go('s_account')">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+  </div>
+  <b style="font-size:15px">支援與說明</b>
+  <span style="width:24px"></span>
+</div>
 <div class="screen"><div class="pad">
   <input class="input" placeholder="🔍 搜尋說明文章" style="margin-bottom:14px">
   <div class="daygroup">常見問題</div>
   ${faqRow('我的私鑰存在哪裡？')}
   ${faqRow('轉錯鏈的資產能找回嗎？')}
-  ${faqRow('如何新增 ERC20 代幣？')}
+  ${faqRow('如何查看 ERC20 / BEP20 代幣？')}
   ${faqRow('交易一直顯示「確認中」怎麼辦？')}
   ${faqRow('忘記密碼如何還原帳號？')}
   <div class="daygroup" style="margin-top:18px">聯絡我們</div>
   <button class="btn btn-dark" style="margin-bottom:10px">💬 線上客服（24 小時）</button>
   <button class="btn btn-ghost" style="margin-bottom:10px">✉️ 寄送電子郵件</button>
   <div class="summary" style="text-align:left;margin-top:6px">
-    <div><span class="muted">App 版本</span><span>v0.1.0 (build 240616)</span></div>
+    <div><span class="muted">App 版本</span><span>v0.2.0</span></div>
     <div><span class="muted">服務條款</span><span style="color:var(--mm-orange-deep)">查看 ›</span></div>
     <div><span class="muted">隱私權政策</span><span style="color:var(--mm-orange-deep)">查看 ›</span></div>
   </div>
 </div></div>`};
 
-/* ---------- partials ---------- */
-function tokenRow(cls,sym,name,bal,usd,chg){
-  const chgCol = chg.startsWith('-')?'var(--red)':(chg==='0.0%'||chg===''?'var(--ink-2)':'var(--green)');
-  const init = sym==='BTC'?'₿':sym==='ETH'?'Ξ':sym==='XRP'?'✕':sym.slice(0,2);
+/* ========== PARTIALS ========== */
+function tokenRow(cls, sym, network, bal, val){
+  const init = {BTC:'₿',ETH:'Ξ',XRP:'✕',USDC:'UC',USDT:'UT',BNB:'BN'}[sym] ?? sym.slice(0,2);
   return `<div class="row" onclick="go('s_send')">
     <div class="coin ${cls}">${init}</div>
-    <div class="nm"><b>${sym}</b><small>${name}</small></div>
-    <div class="vl"><b>${usd}</b><small style="color:${chgCol}">${bal}${chg?' · '+chg:''}</small></div>
+    <div class="nm"><b>${sym}</b><small>${network}</small></div>
+    <div class="vl"><b>${bal}</b><small>≈ ${val}</small></div>
   </div>`;
 }
-const ic_send_ink_dup=`<svg viewBox="0 0 24 24" fill="none" stroke="var(--mm-orange-deep)" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-function tx(type,title,sub,val,dir,st,stTxt){
-  const i = type==='send'?ic_send_ink:type==='recv'?ic_recv_ink:ic_swap_ink;
+
+function txRow(type, title, sub, val, dir, st, stTxt){
+  const bg = type==='send' ? '#fdeee0' : '#e9f7ee';
+  const icon = type==='send' ? ic_send_orange : ic_recv_green;
   return `<div class="tx" onclick="go('s_tx_detail')">
-    <div class="ti">${i}</div>
-    <div class="info"><b>${title}</b><small>${sub} · <span class="badge ${st==='pend'?'pend':''}">${stTxt}</span></small></div>
+    <div class="ti" style="background:${bg}">${icon}</div>
+    <div class="info">
+      <b>${title}</b>
+      <small>${sub} · <span class="badge ${st==='pend'?'pend':''}">${stTxt}</span></small>
+    </div>
     <div class="val ${dir}">${val}</div>
   </div>`;
 }
-function netRow(cls,name,sub,check){
-  const init = cls==='btc'?'₿':cls==='eth'?'Ξ':cls==='xrp'?'✕':cls.slice(0,2).toUpperCase();
-  return `<div class="row" onclick="go('s_dashboard')">
-    <div class="coin ${cls}">${init}</div>
+
+function netRow(id, name, sub, bgStyle, init, check){
+  return `<div class="row" onclick="go('s_receive')">
+    <div class="coin" style="${bgStyle}">${init}</div>
     <div class="nm"><b>${name}</b><small>${sub}</small></div>
     <div class="vl" style="color:var(--mm-orange-deep);font-weight:700">${check}</div>
   </div>`;
 }
-function setRow(emo,t,s,target){
+
+function setRow(emo, t, s, target){
   return `<div class="row" style="padding:13px 2px" onclick="go('${target}')">
     <div class="ti" style="width:36px;height:36px;border-radius:9px;background:#f2f4f6;display:flex;align-items:center;justify-content:center">${emo}</div>
     <div class="nm" style="margin-left:10px"><b>${t}</b><small>${s}</small></div>
     <div class="muted">›</div>
   </div>`;
 }
-function toggleRow(emo,t,s,on,chevron){
+
+function toggleRow(emo, t, s, on, chevron){
   const ctrl = chevron
     ? '<div class="muted">›</div>'
     : `<div class="tg ${on?'on':''}"><span></span></div>`;
@@ -484,25 +615,42 @@ function toggleRow(emo,t,s,on,chevron){
     ${ctrl}
   </div>`;
 }
+
 function faqRow(q){
-  return `<div class="row" style="padding:13px 2px;cursor:pointer">
+  return `<div class="row" style="padding:13px 2px">
     <div class="nm"><b style="font-weight:500;font-size:13.5px">${q}</b></div>
     <div class="muted">›</div>
   </div>`;
 }
 
-/* ---------- render all frames ---------- */
-const order = ['s_welcome','s_login','s_loading','s_dashboard','s_send','s_send_confirm','s_send_done','s_receive','s_history','s_tx_detail','s_network','s_account','s_security','s_support'];
+/* ========== RENDER ========== */
+const order = [
+  's_login','s_register','s_loading',
+  's_dashboard',
+  's_send','s_send_confirm','s_send_done',
+  's_receive',
+  's_history','s_tx_detail',
+  's_network',
+  's_account','s_security','s_support'
+];
+
 const canvas = document.getElementById('canvas');
-order.forEach(id=>{
-  const f = document.createElement('div'); f.className='frame';
-  f.innerHTML = `<div class="frame-label"><span>${S[id].label.replace(/^(\d+\w*) · /, (m,n)=>`<span class="num">${n}</span> · `)}</span></div>
+order.forEach(id => {
+  const f = document.createElement('div');
+  f.className = 'frame';
+  f.innerHTML = `
+    <div class="frame-label">
+      <span>${S[id].label.replace(/^(\d+\w*) · /, (m,n)=>`<span class="num">${n}</span> · `)}</span>
+    </div>
     <div class="device" id="${id}">${S[id].html}</div>`;
   canvas.appendChild(f);
 });
+
 function go(id){
   const el = document.getElementById(id);
-  if(el){ el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
-    el.animate([{boxShadow:'0 0 0 3px #f6851b'},{boxShadow:'var(--shadow)'}],{duration:900}); }
+  if(el){
+    el.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+    el.animate([{boxShadow:'0 0 0 4px #f6851b'},{boxShadow:'var(--shadow)'}],{duration:800});
+  }
 }
 </script>
