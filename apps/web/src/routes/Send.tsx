@@ -54,8 +54,8 @@ export function Send() {
   })
 
   const { data: balancesData } = useQuery({
-    queryKey: ['balances'],
-    queryFn: () => api.get<{ balances: AssetBalance[] }>('/wallet/balances'),
+    queryKey: ['balances', null, 1],
+    queryFn: () => api.get<{ balances: AssetBalance[] }>('/wallet/balances?quoteSymbolId=1'),
     staleTime: 30_000,
   })
 
@@ -63,6 +63,7 @@ export function Send() {
   const allBalances: AssetBalance[] = balancesData?.balances ?? []
   const selectedAsset = watch('asset') as AssetSymbol
   const selectedChain = watch('chain') as Chain
+  const watchedAmount = watch('amount')
 
   const allSymbols = [...new Set(allAssets.map((a) => a.symbol.name))]
 
@@ -116,6 +117,13 @@ export function Send() {
   const currentBalance = allBalances.find(
     (b) => b.symbolName === selectedAsset && b.networkProtocol === currentProtocol
   )
+
+  const estimatedValue = (() => {
+    const price = currentBalance?.price ? parseFloat(currentBalance.price) : null
+    const amt = parseFloat(watchedAmount || '0')
+    if (!price || isNaN(amt) || amt <= 0) return null
+    return (amt * price).toFixed(2)
+  })()
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -195,7 +203,7 @@ export function Send() {
             />
             {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount.message}</p>}
             <div className="flex justify-between mt-[6px] text-xs text-ink-2">
-              <span>≈ $0.00 USD</span>
+              <span>{estimatedValue != null ? `≈ $ ${estimatedValue} USDT` : '≈ $ -- USDT'}</span>
               <b
                 className="text-orange-deep cursor-pointer select-none"
                 onClick={() => currentBalance?.balance && setValue('amount', currentBalance.balance)}
