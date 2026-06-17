@@ -5,4 +5,6 @@ export const CHAIN_LABELS: Record<Chain, string> = {
   btc: 'Bitcoin',
   xrp: 'XRP Ledger',
   bsc: 'Binance Smart Chain',
+  sol: 'Solana',
+  ada: 'Cardano',
 }

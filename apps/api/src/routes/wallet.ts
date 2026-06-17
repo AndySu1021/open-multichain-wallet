@@ -3,17 +3,19 @@ import { z } from 'zod'
 import type { Chain } from '@fox-wallet/shared'
 import { prisma } from '../db/client.js'
 import { requireAuth } from '../middleware/auth.js'
-import { MockKeyManager } from '../keymanager/MockKeyManager.js'
+import { HdKeyManager } from '../keymanager/HdKeyManager.js'
 import { getAdapter } from '../chains/registry.js'
 import { Errors } from '../lib/errors.js'
 
-const keyManager = new MockKeyManager()
+const keyManager = new HdKeyManager()
 
 const PROTOCOL_TO_CHAIN: Record<string, Chain> = {
   ERC20: 'eth',
   BTC: 'btc',
   XRP: 'xrp',
   BEP20: 'bsc',
+  SOL: 'sol',
+  ADA: 'ada',
 }
 
 const GetAddressSchema = z.object({
@@ -30,7 +32,7 @@ async function getOrCreateAddress(userId: bigint, networkId: number): Promise<st
   const chain = PROTOCOL_TO_CHAIN[network.protocol] ?? 'eth'
   const { address } = await keyManager.createWallet(userId.toString(), chain)
   await prisma.walletAddress.create({
-    data: { userId, networkId, address, encryptedKeyRef: 'mock' },
+    data: { userId, networkId, address, encryptedKeyRef: network.hdDerivationPath ?? 'unknown' },
   })
   return address
 }
@@ -113,12 +115,14 @@ export async function walletRoutes(app: FastifyInstance) {
 
   // GET /wallet/address/by-chain?chain=eth  — used by tx routes internally
   app.get('/wallet/address/by-chain', { preHandler: requireAuth }, async (request, reply) => {
-    const query = z.object({ chain: z.enum(['eth', 'btc', 'xrp', 'bsc']) }).safeParse(request.query)
+    const query = z.object({ chain: z.enum(['eth', 'btc', 'xrp', 'bsc', 'sol', 'ada']) }).safeParse(request.query)
     if (!query.success) {
       return reply.code(400).send({ ok: false, error: { code: 'VALIDATION', message: query.error.message } })
     }
 
-    const CHAIN_TO_PROTOCOL: Record<Chain, string> = { eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20' }
+    const CHAIN_TO_PROTOCOL: Record<Chain, string> = {
+      eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20', sol: 'SOL', ada: 'ADA',
+    }
     const userId = BigInt(request.user.sub)
     const walletAddr = await prisma.walletAddress.findFirst({
       where: { userId, network: { protocol: CHAIN_TO_PROTOCOL[query.data.chain] } },

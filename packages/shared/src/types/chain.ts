@@ -1,6 +1,6 @@
-export type Chain = 'btc' | 'eth' | 'xrp' | 'bsc'
+export type Chain = 'btc' | 'eth' | 'xrp' | 'bsc' | 'sol' | 'ada'
 
-export type AssetSymbol = 'BTC' | 'ETH' | 'USDC' | 'USDT' | 'XRP' | 'BNB'
+export type AssetSymbol = 'BTC' | 'ETH' | 'USDC' | 'USDT' | 'XRP' | 'BNB' | 'SOL' | 'ADA'
 
 export type TxType = 'send' | 'receive'
 

@@ -10,13 +10,19 @@ import { usePendingTx } from '../store/pendingTx.js'
 import { Button } from '../components/ui/Button.js'
 import { Input } from '../components/ui/Input.js'
 
-const PROTOCOL_TO_CHAIN: Record<string, Chain> = { ERC20: 'eth', BTC: 'btc', XRP: 'xrp', BEP20: 'bsc' }
-const CHAIN_TO_PROTOCOL: Record<Chain, string> = { eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20' }
+const PROTOCOL_TO_CHAIN: Record<string, Chain> = {
+  ERC20: 'eth', BTC: 'btc', XRP: 'xrp', BEP20: 'bsc', SOL: 'sol', ADA: 'ada',
+}
+const CHAIN_TO_PROTOCOL: Record<Chain, string> = {
+  eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20', sol: 'SOL', ada: 'ADA',
+}
 const PROTOCOL_COLOR: Record<string, string> = {
   BTC: 'bg-[#f7931a]',
   ERC20: 'bg-[#627eea]',
   XRP: 'bg-[#23292f]',
   BEP20: 'bg-[#f0b90b]',
+  SOL: 'bg-[#9945ff]',
+  ADA: 'bg-[#0033ad]',
 }
 
 const SendFormSchema = z.object({

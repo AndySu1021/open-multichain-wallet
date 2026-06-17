@@ -4,6 +4,7 @@ CREATE TABLE "user" (
     "email" TEXT NOT NULL,
     "password_hash" TEXT,
     "google_id" TEXT,
+    "encrypted_seed" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -18,6 +19,8 @@ CREATE TABLE "network" (
     "status" INTEGER NOT NULL DEFAULT 1,
     "image_url" TEXT NOT NULL,
     "explorer_url" TEXT,
+    "hd_derivation_path" TEXT,
+    "hd_curve" TEXT,
 
     CONSTRAINT "network_pkey" PRIMARY KEY ("id")
 );
@@ -48,6 +51,7 @@ CREATE TABLE "quotation" (
     "symbol_id" INTEGER NOT NULL,
     "quote_symbol_id" INTEGER NOT NULL,
     "price" DECIMAL(65,30) NOT NULL,
+    "provider" TEXT,
 
     CONSTRAINT "quotation_pkey" PRIMARY KEY ("id")
 );
