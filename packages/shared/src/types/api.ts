@@ -1,9 +1,9 @@
-export interface ApiSuccess<T> {
+interface ApiSuccess<T> {
   ok: true
   data: T
 }
 
-export interface ApiError {
+interface ApiError {
   ok: false
   error: {
     code: string

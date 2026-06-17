@@ -4,7 +4,7 @@ export type AssetSymbol = 'BTC' | 'ETH' | 'USDC' | 'USDT' | 'XRP' | 'BNB'
 
 export type TxType = 'send' | 'receive'
 
-export type TxStatus = 'pending' | 'confirmed' | 'failed'
+type TxStatus = 'pending' | 'confirmed' | 'failed'
 
 export interface Balance {
   chain: Chain
