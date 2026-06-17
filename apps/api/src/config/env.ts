@@ -18,6 +18,7 @@ const EnvSchema = z.object({
   WEB_ORIGIN: z.string().url().default('http://localhost:5173'),
   PORT: z.coerce.number().default(3001),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  QUOTE_SYNC_INTERVAL_MS: z.coerce.number().int().min(10_000).default(60_000),
 })
 
 export const env = EnvSchema.parse(process.env)

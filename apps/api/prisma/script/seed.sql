@@ -45,20 +45,22 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url;
 
 -- ── Quotations ────────────────────────────────────────────────────────────────
-INSERT INTO quotation (symbol_id, quote_symbol_id, price)
+INSERT INTO quotation (symbol_id, quote_symbol_id, price, provider)
 VALUES
-  -- vs USDT (quote_symbol_id = 1)
-  (1, 1, 1745.77),   -- ETH  / USDT
-  (2, 1, 64630.5),   -- BTC  / USDT
-  (3, 1, 1.1905),    -- XRP  / USDT
-  (4, 1, 603.50),    -- BNB  / USDT
-  (5, 1, 1),         -- USDT / USDT
-  (6, 1, 1.00060),   -- USDC / USDT
-  -- vs USD (quote_symbol_id = 2)
-  (1, 2, 1761.08),   -- ETH  / USD
-  (2, 2, 64808.5),   -- BTC  / USD
-  (3, 2, 1.1949),    -- XRP  / USD
-  (4, 2, 605.20),    -- BNB  / USD
-  (5, 2, 0.99914),   -- USDT / USD
-  (6, 2, 0.99982)    -- USDC / USD
-ON CONFLICT (symbol_id, quote_symbol_id) DO UPDATE SET price = EXCLUDED.price;
+  -- vs USDT (quote_symbol_id = 1) — fetched from OKX
+  (1, 1, 1745.77,  'okx'),       -- ETH  / USDT
+  (2, 1, 64630.5,  'okx'),       -- BTC  / USDT
+  (3, 1, 1.1905,   'okx'),       -- XRP  / USDT
+  (4, 1, 603.50,   'okx'),       -- BNB  / USDT
+  (5, 1, 1,        NULL),        -- USDT / USDT (same currency, skipped)
+  (6, 1, 1.00060,  'okx'),       -- USDC / USDT
+  -- vs USD (quote_symbol_id = 2) — fetched from CoinGecko
+  (1, 2, 1761.08,  'coingecko'), -- ETH  / USD
+  (2, 2, 64808.5,  'coingecko'), -- BTC  / USD
+  (3, 2, 1.1949,   'coingecko'), -- XRP  / USD
+  (4, 2, 605.20,   'coingecko'), -- BNB  / USD
+  (5, 2, 0.99914,  'coingecko'), -- USDT / USD
+  (6, 2, 0.99982,  'coingecko')  -- USDC / USD
+ON CONFLICT (symbol_id, quote_symbol_id) DO UPDATE SET
+  price    = EXCLUDED.price,
+  provider = EXCLUDED.provider;

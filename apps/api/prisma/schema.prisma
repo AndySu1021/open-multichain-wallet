@@ -68,6 +68,7 @@ model Quotation {
   symbolId      Int     @map("symbol_id")
   quoteSymbolId Int     @map("quote_symbol_id")
   price         Decimal
+  provider      String? // 'okx' | 'coingecko' | null (same-currency, skipped)
 
   symbol      Symbol      @relation(fields: [symbolId], references: [id])
   quoteSymbol QuoteSymbol @relation(fields: [quoteSymbolId], references: [id])

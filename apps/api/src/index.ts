@@ -12,6 +12,7 @@ import { authRoutes } from './routes/auth.js'
 import { walletRoutes } from './routes/wallet.js'
 import { txRoutes } from './routes/tx.js'
 import { networkRoutes } from './routes/network.js'
+import { startQuoteSync, stopQuoteSync } from './jobs/quoteSync.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -53,6 +54,7 @@ await app.register(txRoutes)
 await app.register(networkRoutes)
 
 const shutdown = async () => {
+  stopQuoteSync()
   await app.close()
   await prisma.$disconnect()
   process.exit(0)
@@ -64,6 +66,7 @@ try {
   await prisma.$connect()
   await app.listen({ port: env.PORT, host: '0.0.0.0' })
   console.log(`🦊 API running on http://localhost:${env.PORT}`)
+  startQuoteSync()
 } catch (err) {
   app.log.error(err)
   await prisma.$disconnect()
