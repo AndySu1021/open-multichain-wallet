@@ -131,7 +131,7 @@ model Transaction {
   toAddress   String    @map("to_address")
   amount      Decimal
   txHash      String    @map("tx_hash")
-  status      String    @default("pending")
+  status      Int       @default(0)
   fee         String?
   blockTime   DateTime? @map("block_time")
   createdAt   DateTime  @default(now()) @map("created_at")

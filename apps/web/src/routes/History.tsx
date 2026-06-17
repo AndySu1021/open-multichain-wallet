@@ -130,7 +130,7 @@ export function History() {
               tx.type === 'send' ? 'text-ink' : 'text-green-600'
             }`}>
               {tx.type === 'send' ? '-' : '+'}{tx.amount} {tx.symbolName}
-              <span className={`block text-[10px] font-semibold px-[7px] py-[2px] rounded-full mt-[2px] ${
+              <span className={`block w-fit ml-auto text-[10px] font-semibold px-[7px] py-[2px] rounded-full mt-[2px] ${
                 tx.status === 'pending' ? 'bg-[#fff4e5] text-[#b06a00]' : 'bg-[#e9f7ee] text-green-700'
               }`}>
                 {tx.status === 'pending' ? '確認中' : '已完成'}

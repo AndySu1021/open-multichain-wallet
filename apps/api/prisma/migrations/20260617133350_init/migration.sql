@@ -99,7 +99,7 @@ CREATE TABLE "transaction" (
     "to_address" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
     "tx_hash" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'pending',
+    "status" INTEGER NOT NULL DEFAULT 0,
     "fee" TEXT,
     "block_time" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -20,6 +20,12 @@ function mapTxType(type: number): TxType {
   return type === 1 ? 'send' : 'receive'
 }
 
+function mapTxStatus(status: number): string {
+  if (status === 1) return 'confirmed'
+  if (status === 2) return 'failed'
+  return 'pending'
+}
+
 export async function txRoutes(app: FastifyInstance) {
   app.post('/tx/estimate', { preHandler: requireAuth }, async (request, reply) => {
     const body = EstimateFeeSchema.safeParse(request.body)
@@ -96,7 +102,7 @@ export async function txRoutes(app: FastifyInstance) {
     const txHash = await adapter.broadcastTransaction(signedTx)
 
     const tx = await prisma.transaction.create({
-      data: { userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 'pending' },
+      data: { userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 0 },
     })
 
     return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id } })
@@ -147,7 +153,7 @@ export async function txRoutes(app: FastifyInstance) {
           fromAddress: t.fromAddress,
           toAddress: t.toAddress,
           txHash: t.txHash,
-          status: t.status,
+          status: mapTxStatus(t.status),
           fee: t.fee ?? undefined,
           blockTime: t.blockTime?.toISOString(),
           createdAt: t.createdAt.toISOString(),
