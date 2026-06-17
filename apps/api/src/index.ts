@@ -1,13 +1,19 @@
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Fastify from 'fastify'
 import fjwt from '@fastify/jwt'
 import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
+import staticFiles from '@fastify/static'
 import { env } from './config/env.js'
 import { prisma } from './db/client.js'
 import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
 import { walletRoutes } from './routes/wallet.js'
 import { txRoutes } from './routes/tx.js'
+import { networkRoutes } from './routes/network.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const app = Fastify({
   logger: { level: env.NODE_ENV === 'development' ? 'info' : 'warn' },
@@ -35,10 +41,16 @@ app.setErrorHandler((error, _request, reply) => {
   void reply.code(500).send({ ok: false, error: { code: 'INTERNAL', message: 'Internal server error' } })
 })
 
+await app.register(staticFiles, {
+  root: resolve(__dirname, 'icons'),
+  prefix: '/icons/',
+})
+
 await app.register(healthRoutes)
 await app.register(authRoutes)
 await app.register(walletRoutes)
 await app.register(txRoutes)
+await app.register(networkRoutes)
 
 const shutdown = async () => {
   await app.close()

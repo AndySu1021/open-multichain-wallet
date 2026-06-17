@@ -24,14 +24,18 @@ export class XrpAdapter implements ChainAdapter {
   async getTransaction(hash: string): Promise<Transaction> {
     return {
       id: hash,
-      chain: 'xrp',
+      networkId: 0,
+      symbolId: 0,
+      networkName: 'XRP Ledger',
+      symbolName: 'XRP',
+      networkProtocol: 'XRP',
       type: 'send',
-      asset: 'XRP',
       amount: '0.0',
       fromAddress: '',
       toAddress: '',
       txHash: hash,
       status: 'pending',
+      createdAt: new Date().toISOString(),
     }
   }
 

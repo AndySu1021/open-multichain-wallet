@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/auth.js'
-import { Welcome } from './routes/Welcome.js'
 import { Login } from './routes/Login.js'
 import { Register } from './routes/Register.js'
 import { AuthCallback } from './routes/AuthCallback.js'
@@ -24,7 +23,7 @@ export function App() {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<Welcome />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/auth/callback" element={<AuthCallback />} />

@@ -1,8 +1,8 @@
-export type Chain = 'btc' | 'eth' | 'xrp'
+export type Chain = 'btc' | 'eth' | 'xrp' | 'bsc'
 
-export type AssetSymbol = 'BTC' | 'ETH' | 'USDC' | 'USDT' | 'XRP'
+export type AssetSymbol = 'BTC' | 'ETH' | 'USDC' | 'USDT' | 'XRP' | 'BNB'
 
-export type TxType = 'send' | 'receive' | 'swap'
+export type TxType = 'send' | 'receive'
 
 export type TxStatus = 'pending' | 'confirmed' | 'failed'
 
@@ -21,21 +21,21 @@ export interface Address {
 
 export interface Transaction {
   id: string
-  chain: Chain
+  networkId: number
+  symbolId: number
+  networkName: string
+  symbolName: string
+  networkProtocol: string
+  explorerUrl?: string
   type: TxType
-  asset: AssetSymbol
   amount: string
-  usdValue?: string
   fromAddress: string
   toAddress: string
   txHash: string
   status: TxStatus
-  confirmations?: number
-  requiredConfirmations?: number
   fee?: string
-  feeUsd?: string
   blockTime?: string
-  nonce?: number
+  createdAt: string
 }
 
 export interface SendParams {
@@ -54,3 +54,38 @@ export interface FeeEstimate {
 
 export type TxHash = string
 export type RawTx = unknown
+
+export interface AssetItem {
+  id: number
+  contractAddress: string | null
+  status: number
+  symbol: { id: number; name: string; imageUrl: string }
+  network: { id: number; name: string; protocol: string; imageUrl: string }
+}
+
+export interface NetworkItem {
+  id: number
+  name: string
+  protocol: string
+  imageUrl: string
+  explorerUrl?: string
+}
+
+export interface AssetBalance {
+  assetId: number
+  symbolName: string
+  symbolImageUrl: string
+  networkName: string
+  networkProtocol: string
+  networkImageUrl: string
+  contractAddress: string | null
+  balance: string
+  price?: string
+  value?: string
+}
+
+export interface QuoteSymbolItem {
+  id: number
+  name: string
+  imageUrl: string
+}

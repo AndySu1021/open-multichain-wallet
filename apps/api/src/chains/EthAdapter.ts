@@ -28,14 +28,18 @@ export class EthAdapter implements ChainAdapter {
   async getTransaction(hash: string): Promise<Transaction> {
     return {
       id: hash,
-      chain: 'eth',
+      networkId: 0,
+      symbolId: 0,
+      networkName: 'Ethereum',
+      symbolName: 'ETH',
+      networkProtocol: 'ERC20',
       type: 'send',
-      asset: 'ETH',
       amount: '0.0',
       fromAddress: '',
       toAddress: '',
       txHash: hash,
       status: 'pending',
+      createdAt: new Date().toISOString(),
     }
   }
 

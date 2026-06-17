@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Transaction } from '@fox-wallet/shared'
-import { CHAIN_LABELS } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
 
-const TYPE_LABEL = { send: '傳送', receive: '接收', swap: '兌換' }
-const STATUS_LABEL = { pending: '確認中', confirmed: '已完成', failed: '失敗' }
+const STATUS_LABEL: Record<string, string> = { pending: '確認中', confirmed: '已完成', failed: '失敗' }
 
 function truncate(addr: string) {
   return addr.length > 20 ? addr.slice(0, 10) + '…' + addr.slice(-8) : addr
@@ -48,7 +46,6 @@ export function TxDetail() {
         )}
         {tx && (
           <div className="text-center">
-            {/* Icon */}
             <div className="w-[38px] h-[38px] rounded-full bg-[#fdeee0] flex items-center justify-center mx-auto mt-2">
               <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#e2761b" strokeWidth="2">
                 {tx.type === 'send'
@@ -58,7 +55,7 @@ export function TxDetail() {
             </div>
 
             <div className="text-[26px] font-bold mt-1 tabular-nums">
-              {tx.type === 'send' ? '-' : '+'}{tx.amount} {tx.asset}
+              {tx.type === 'send' ? '-' : '+'}{tx.amount} {tx.symbolName}
             </div>
 
             <span className={`inline-block text-[10px] font-semibold px-[7px] py-[2px] rounded-full mt-2 mb-[18px] ${
@@ -69,20 +66,15 @@ export function TxDetail() {
                 : 'bg-red-100 text-red-600'
             }`}>
               ● {STATUS_LABEL[tx.status] ?? tx.status}
-              {tx.status === 'pending' && tx.confirmations != null && tx.requiredConfirmations != null
-                ? ` (${tx.confirmations}/${tx.requiredConfirmations})`
-                : ''}
             </span>
 
-            {/* Detail rows */}
             <div className="bg-[#fafbfc] border border-line-soft rounded-[12px] p-[14px] text-[13px] text-left">
               {[
-                { label: '類型', value: TYPE_LABEL[tx.type] ?? tx.type },
-                { label: '網路', value: CHAIN_LABELS[tx.chain] },
+                { label: '類型', value: tx.type === 'send' ? '傳送' : '接收' },
+                { label: '網路', value: tx.networkName },
                 { label: tx.type === 'send' ? '至' : '來自', value: truncate(tx.type === 'send' ? tx.toAddress : tx.fromAddress) },
                 ...(tx.blockTime ? [{ label: '時間', value: new Date(tx.blockTime).toLocaleString('zh-TW') }] : []),
-                ...(tx.fee ? [{ label: '礦工費', value: `${tx.fee} ${tx.asset}${tx.feeUsd ? ` ($${tx.feeUsd})` : ''}` }] : []),
-                ...(tx.nonce != null ? [{ label: 'Nonce', value: String(tx.nonce) }] : []),
+                ...(tx.fee ? [{ label: '礦工費', value: `${tx.fee} ${tx.symbolName}` }] : []),
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-[5px]">
                   <span className="text-ink-2">{label}</span>
@@ -91,12 +83,14 @@ export function TxDetail() {
               ))}
             </div>
 
-            <button
-              className="w-full mt-3 bg-white border border-line rounded-full py-[10px] text-[13px] font-semibold hover:border-[#b9bdc1]"
-              onClick={() => window.open(`https://sepolia.etherscan.io/tx/${tx.txHash}`, '_blank')}
-            >
-              在區塊鏈瀏覽器查看 ↗
-            </button>
+            {tx.explorerUrl && (
+              <button
+                className="w-full mt-3 bg-white border border-line rounded-full py-[10px] text-[13px] font-semibold hover:border-[#b9bdc1]"
+                onClick={() => window.open(`${tx.explorerUrl}/tx/${tx.txHash}`, '_blank')}
+              >
+                在區塊鏈瀏覽器查看 ↗
+              </button>
+            )}
           </div>
         )}
       </div>

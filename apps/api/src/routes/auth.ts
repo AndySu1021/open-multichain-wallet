@@ -29,8 +29,8 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.code(201).send({
       ok: true,
       data: {
-        user: { id: user.id, email: user.email, createdAt: user.createdAt.toISOString() },
-        tokens: issueTokens(app, user.id, user.email),
+        user: { id: user.id.toString(), email: user.email, createdAt: user.createdAt.toISOString() },
+        tokens: issueTokens(app, user.id.toString(), user.email),
       },
     })
   })
@@ -57,8 +57,8 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({
       ok: true,
       data: {
-        user: { id: user.id, email: user.email, createdAt: user.createdAt.toISOString() },
-        tokens: issueTokens(app, user.id, user.email),
+        user: { id: user.id.toString(), email: user.email, createdAt: user.createdAt.toISOString() },
+        tokens: issueTokens(app, user.id.toString(), user.email),
       },
     })
   })
@@ -149,7 +149,7 @@ export async function authRoutes(app: FastifyInstance) {
         })
       }
 
-      const tokens = issueTokens(app, user.id, user.email)
+      const tokens = issueTokens(app, user.id.toString(), user.email)
       const params = new URLSearchParams({
         access_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CHAIN_LABELS } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
@@ -22,9 +22,10 @@ export function SendConfirm() {
   const { form, fee, clear } = usePendingTx()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const leaving = useRef(false)
 
   if (!form || !fee) {
-    nav('/send', { replace: true })
+    if (!leaving.current) nav('/send', { replace: true })
     return null
   }
 
@@ -34,11 +35,12 @@ export function SendConfirm() {
     setIsSubmitting(true)
     try {
       const res = await api.post<{ txHash: string }>('/tx/send', form)
+      const snapshot = { amount: form.amount, asset: form.asset, toAddress: form.toAddress, chain: form.chain }
+      leaving.current = true
+      nav(`/send/done/${res.txHash}`, { replace: true, state: snapshot })
       clear()
-      nav(`/send/done/${res.txHash}`, { replace: true })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Transaction failed')
-    } finally {
       setIsSubmitting(false)
     }
   }
@@ -70,13 +72,22 @@ export function SendConfirm() {
           {[
             { label: '網路', value: CHAIN_LABELS[form.chain] },
             { label: '收款地址', value: truncate(form.toAddress) },
-            { label: '礦工費（預估）', value: `$${fee.feeUsd}${fee.estimatedTime ? ` · ${fee.estimatedTime}` : ''}` },
           ].map(({ label, value }) => (
             <div key={label} className="flex justify-between py-[5px]">
               <span className="text-ink-2">{label}</span>
               <span className="font-semibold tabular-nums">{value}</span>
             </div>
           ))}
+          <div className="flex justify-between py-[5px]">
+            <span className="text-ink-2">礦工費（預估）</span>
+            <span className="font-semibold tabular-nums">${fee.feeUsd}</span>
+          </div>
+          {fee.estimatedTime && (
+            <div className="flex justify-between py-[5px]">
+              <span className="text-ink-2">預估時間</span>
+              <span className="font-semibold">{fee.estimatedTime}</span>
+            </div>
+          )}
           <div className="flex justify-between py-[5px] border-t border-line-soft mt-1 pt-[9px]">
             <span>傳送金額</span>
             <span className="font-semibold">{form.amount} {form.asset}</span>

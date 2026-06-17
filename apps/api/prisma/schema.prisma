@@ -8,49 +8,140 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           BigInt   @id @default(autoincrement())
   email        String   @unique
-  passwordHash String?
-  googleId     String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  passwordHash String?  @map("password_hash")
+  googleId     String?  @unique @map("google_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  wallets      Wallet[]
-  transactions Transaction[]
+  userAssets      UserAsset[]
+  walletAddresses WalletAddress[]
+  transactions    Transaction[]
+
+  @@map("user")
 }
 
-model Wallet {
-  id              String   @id @default(cuid())
-  userId          String
-  chain           String
+model Network {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  protocol    String
+  status      Int     @default(1)
+  imageUrl    String  @map("image_url")
+  explorerUrl String? @map("explorer_url")
+
+  assets          Asset[]
+  walletAddresses WalletAddress[]
+  userAssets      UserAsset[]
+  transactions    Transaction[]
+
+  @@map("network")
+}
+
+model Symbol {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  status   Int    @default(1)
+  imageUrl String @map("image_url")
+
+  assets       Asset[]
+  userAssets   UserAsset[]
+  transactions Transaction[]
+  quotations   Quotation[]
+
+  @@map("symbol")
+}
+
+model QuoteSymbol {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  imageUrl String @map("image_url")
+  status   Int    @default(1)
+
+  quotations Quotation[]
+
+  @@map("quote_symbol")
+}
+
+model Quotation {
+  id            Int     @id @default(autoincrement())
+  symbolId      Int     @map("symbol_id")
+  quoteSymbolId Int     @map("quote_symbol_id")
+  price         Decimal
+
+  symbol      Symbol      @relation(fields: [symbolId], references: [id])
+  quoteSymbol QuoteSymbol @relation(fields: [quoteSymbolId], references: [id])
+
+  @@unique([symbolId, quoteSymbolId])
+  @@map("quotation")
+}
+
+model Asset {
+  id              Int     @id @default(autoincrement())
+  symbolId        Int     @map("symbol_id")
+  networkId       Int     @map("network_id")
+  contractAddress String? @map("contract_address")
+  status          Int     @default(1)
+
+  symbol  Symbol  @relation(fields: [symbolId], references: [id])
+  network Network @relation(fields: [networkId], references: [id])
+
+  @@unique([symbolId, networkId])
+  @@map("asset")
+}
+
+model UserAsset {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  networkId Int      @map("network_id")
+  symbolId  Int      @map("symbol_id")
+  balance   Decimal  @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  network Network @relation(fields: [networkId], references: [id])
+  symbol  Symbol  @relation(fields: [symbolId], references: [id])
+
+  @@unique([userId, networkId, symbolId])
+  @@map("user_asset")
+}
+
+model WalletAddress {
+  id              BigInt   @id @default(autoincrement())
+  userId          BigInt   @map("user_id")
+  networkId       Int      @map("network_id")
+  encryptedKeyRef String   @map("encrypted_key_ref")
   address         String
-  encryptedKeyRef String?
-  createdAt       DateTime @default(now())
+  memo            String?
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  network Network @relation(fields: [networkId], references: [id])
 
-  @@unique([userId, chain])
-  @@index([address])
+  @@map("wallet_address")
 }
 
 model Transaction {
   id          String    @id @default(cuid())
-  userId      String
-  chain       String
-  type        String
-  fromAddress String
-  toAddress   String
-  asset       String
-  amount      String
-  txHash      String
+  userId      BigInt    @map("user_id")
+  networkId   Int       @map("network_id")
+  symbolId    Int       @map("symbol_id")
+  type        Int
+  fromAddress String    @map("from_address")
+  toAddress   String    @map("to_address")
+  amount      Decimal
+  txHash      String    @map("tx_hash")
   status      String    @default("pending")
   fee         String?
-  blockTime   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  blockTime   DateTime? @map("block_time")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  network Network @relation(fields: [networkId], references: [id])
+  symbol  Symbol  @relation(fields: [symbolId], references: [id])
 
-  @@index([userId, chain])
+  @@index([userId, networkId])
   @@index([txHash])
+  @@map("transaction")
 }

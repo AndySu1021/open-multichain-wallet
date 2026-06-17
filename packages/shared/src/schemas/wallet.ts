@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-const ChainSchema = z.enum(['eth', 'btc', 'xrp'])
-const AssetSymbolSchema = z.enum(['BTC', 'ETH', 'USDC', 'USDT', 'XRP'])
+const ChainSchema = z.enum(['eth', 'btc', 'xrp', 'bsc'])
+const AssetSymbolSchema = z.enum(['BTC', 'ETH', 'USDC', 'USDT', 'XRP', 'BNB'])
 
 export const GetAddressSchema = z.object({
   chain: ChainSchema,
@@ -17,7 +17,9 @@ export const SendSchema = z.object({
 export const EstimateFeeSchema = SendSchema
 
 export const GetHistorySchema = z.object({
-  chain: ChainSchema.optional(),
+  networkId: z.coerce.number().int().positive().optional(),
+  symbolId: z.coerce.number().int().positive().optional(),
+  type: z.coerce.number().int().min(1).max(2).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 })
