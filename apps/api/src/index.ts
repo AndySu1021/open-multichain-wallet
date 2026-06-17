@@ -66,7 +66,7 @@ try {
   await prisma.$connect()
   await app.listen({ port: env.PORT, host: '0.0.0.0' })
   console.log(`🦊 API running on http://localhost:${env.PORT}`)
-  startQuoteSync()
+  // startQuoteSync()
 } catch (err) {
   app.log.error(err)
   await prisma.$disconnect()
