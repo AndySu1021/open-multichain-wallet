@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { EstimateFeeSchema, SendSchema, GetHistorySchema } from '@fox-wallet/shared'
-import type { Chain, TxType } from '@fox-wallet/shared'
+import type { Chain, TxType, AssetSymbol } from '@fox-wallet/shared'
 import { prisma } from '../db/client.js'
 import { requireAuth } from '../middleware/auth.js'
 import { getAdapter } from '../chains/registry.js'
@@ -9,21 +9,11 @@ import { Errors } from '../lib/errors.js'
 
 const keyManager = new MockKeyManager()
 
-const CHAIN_TO_PROTOCOL: Record<Chain, string> = { eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20' }
+const PROTOCOL_TO_CHAIN: Record<string, Chain> = { ERC20: 'eth', BTC: 'btc', XRP: 'xrp', BEP20: 'bsc' }
 
-async function getAddressByChain(userId: bigint, chain: Chain): Promise<string | null> {
-  const walletAddr = await prisma.walletAddress.findFirst({
-    where: { userId, network: { protocol: CHAIN_TO_PROTOCOL[chain] } },
-  })
-  return walletAddr?.address ?? null
-}
-
-async function getNetworkByChain(chain: Chain) {
-  return prisma.network.findFirst({ where: { protocol: CHAIN_TO_PROTOCOL[chain] } })
-}
-
-async function getSymbolByName(name: string) {
-  return prisma.symbol.findUnique({ where: { name } })
+async function getAddressByNetworkId(userId: bigint, networkId: number): Promise<string | null> {
+  const wallet = await prisma.walletAddress.findFirst({ where: { userId, networkId } })
+  return wallet?.address ?? null
 }
 
 function mapTxType(type: number): TxType {
@@ -38,18 +28,34 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const userId = BigInt(request.user.sub)
-    const fromAddress = await getAddressByChain(userId, body.data.chain)
+    const { networkId, symbolId, toAddress, amount } = body.data
+
+    const [network, symbol, fromAddress] = await Promise.all([
+      prisma.network.findUnique({ where: { id: networkId } }),
+      prisma.symbol.findUnique({ where: { id: symbolId } }),
+      getAddressByNetworkId(userId, networkId),
+    ])
+
+    if (!network || !symbol) {
+      const err = Errors.NotFound('Network or Symbol')
+      return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
+    }
     if (!fromAddress) {
       const err = Errors.NotFound('WalletAddress')
       return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
     }
 
-    const fee = await getAdapter(body.data.chain).estimateFee({
-      chain: body.data.chain,
+    const chain = PROTOCOL_TO_CHAIN[network.protocol]
+    if (!chain) {
+      return reply.code(400).send({ ok: false, error: { code: 'INVALID_NETWORK', message: 'Unsupported network protocol' } })
+    }
+
+    const fee = await getAdapter(chain).estimateFee({
+      chain,
       fromAddress,
-      toAddress: body.data.toAddress,
-      asset: body.data.asset,
-      amount: body.data.amount,
+      toAddress,
+      asset: symbol.name as AssetSymbol,
+      amount,
     })
     return reply.send({ ok: true, data: fee })
   })
@@ -61,45 +67,36 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const userId = BigInt(request.user.sub)
-    const fromAddress = await getAddressByChain(userId, body.data.chain)
+    const { networkId, symbolId, toAddress, amount } = body.data
+
+    const [network, symbol, fromAddress] = await Promise.all([
+      prisma.network.findUnique({ where: { id: networkId } }),
+      prisma.symbol.findUnique({ where: { id: symbolId } }),
+      getAddressByNetworkId(userId, networkId),
+    ])
+
+    if (!network || !symbol) {
+      const err = Errors.NotFound('Network or Symbol')
+      return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
+    }
     if (!fromAddress) {
       const err = Errors.NotFound('WalletAddress')
       return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
     }
 
-    const [network, symbol] = await Promise.all([
-      getNetworkByChain(body.data.chain),
-      getSymbolByName(body.data.asset),
-    ])
-    if (!network || !symbol) {
-      const err = Errors.NotFound('Network or Symbol')
-      return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
+    const chain = PROTOCOL_TO_CHAIN[network.protocol]
+    if (!chain) {
+      return reply.code(400).send({ ok: false, error: { code: 'INVALID_NETWORK', message: 'Unsupported network protocol' } })
     }
 
-    const adapter = getAdapter(body.data.chain)
-    const params = {
-      chain: body.data.chain,
-      fromAddress,
-      toAddress: body.data.toAddress,
-      asset: body.data.asset,
-      amount: body.data.amount,
-    }
+    const adapter = getAdapter(chain)
+    const params = { chain, fromAddress, toAddress, asset: symbol.name as AssetSymbol, amount }
     const rawTx = await adapter.buildTransaction(params)
-    const signedTx = await keyManager.signTransaction(userId.toString(), body.data.chain, rawTx)
+    const signedTx = await keyManager.signTransaction(userId.toString(), chain, rawTx)
     const txHash = await adapter.broadcastTransaction(signedTx)
 
     const tx = await prisma.transaction.create({
-      data: {
-        userId,
-        networkId: network.id,
-        symbolId: symbol.id,
-        type: 1,
-        fromAddress,
-        toAddress: body.data.toAddress,
-        amount: body.data.amount,
-        txHash,
-        status: 'pending',
-      },
+      data: { userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 'pending' },
     })
 
     return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id } })

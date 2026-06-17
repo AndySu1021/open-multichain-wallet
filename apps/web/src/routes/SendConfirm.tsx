@@ -1,16 +1,15 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CHAIN_LABELS } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
 import { usePendingTx } from '../store/pendingTx.js'
 import { Button } from '../components/ui/Button.js'
 
 const COIN_BG: Record<string, string> = {
   BTC: 'bg-[#f7931a]', ETH: 'bg-[#627eea]', XRP: 'bg-[#23292f]',
-  USDC: 'bg-[#2775ca]', USDT: 'bg-[#26a17b]',
+  USDC: 'bg-[#2775ca]', USDT: 'bg-[#26a17b]', BNB: 'bg-[#f0b90b]',
 }
 const COIN_INIT: Record<string, string> = {
-  BTC: '₿', ETH: 'Ξ', XRP: '✕', USDC: 'UC', USDT: 'UT',
+  BTC: '₿', ETH: 'Ξ', XRP: '✕', USDC: 'UC', USDT: 'UT', BNB: 'BN',
 }
 
 function truncate(addr: string) {
@@ -19,23 +18,23 @@ function truncate(addr: string) {
 
 export function SendConfirm() {
   const nav = useNavigate()
-  const { form, fee, clear } = usePendingTx()
+  const { form, fee, symbolName, networkName, clear } = usePendingTx()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const leaving = useRef(false)
 
-  if (!form || !fee) {
+  if (!form || !fee || !symbolName || !networkName) {
     if (!leaving.current) nav('/send', { replace: true })
     return null
   }
 
   async function confirm() {
-    if (!form) return
+    if (!form || !symbolName || !networkName) return
     setError(null)
     setIsSubmitting(true)
     try {
       const res = await api.post<{ txHash: string }>('/tx/send', form)
-      const snapshot = { amount: form.amount, asset: form.asset, toAddress: form.toAddress, chain: form.chain }
+      const snapshot = { amount: form.amount, symbolName, networkName, toAddress: form.toAddress }
       leaving.current = true
       nav(`/send/done/${res.txHash}`, { replace: true, state: snapshot })
       clear()
@@ -60,17 +59,17 @@ export function SendConfirm() {
 
       <div className="screen-scroll overflow-y-auto flex-1 px-[18px] py-4 text-center">
         {/* Coin icon */}
-        <div className={`w-14 h-14 rounded-full mx-auto mt-[14px] mb-[10px] flex items-center justify-center text-white text-[20px] font-bold ${COIN_BG[form.asset] ?? 'bg-ink-2'}`}>
-          {COIN_INIT[form.asset] ?? form.asset.slice(0, 2)}
+        <div className={`w-14 h-14 rounded-full mx-auto mt-[14px] mb-[10px] flex items-center justify-center text-white text-[20px] font-bold ${COIN_BG[symbolName] ?? 'bg-ink-2'}`}>
+          {COIN_INIT[symbolName] ?? symbolName.slice(0, 2)}
         </div>
 
-        <div className="text-[30px] font-bold tabular-nums">{form.amount} {form.asset}</div>
+        <div className="text-[30px] font-bold tabular-nums">{form.amount} {symbolName}</div>
         <p className="text-ink-2 mt-1 mb-[18px] text-sm">≈ ${fee.feeUsd} USD（費用）</p>
 
         {/* Summary */}
         <div className="bg-[#fafbfc] border border-line-soft rounded-[12px] p-[14px] text-[13px] text-left">
           {[
-            { label: '網路', value: CHAIN_LABELS[form.chain] },
+            { label: '網路', value: networkName },
             { label: '收款地址', value: truncate(form.toAddress) },
           ].map(({ label, value }) => (
             <div key={label} className="flex justify-between py-[5px]">
@@ -90,7 +89,7 @@ export function SendConfirm() {
           )}
           <div className="flex justify-between py-[5px] border-t border-line-soft mt-1 pt-[9px]">
             <span>傳送金額</span>
-            <span className="font-semibold">{form.amount} {form.asset}</span>
+            <span className="font-semibold">{form.amount} {symbolName}</span>
           </div>
         </div>
 

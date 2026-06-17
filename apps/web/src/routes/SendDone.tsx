@@ -4,17 +4,17 @@ import { Button } from '../components/ui/Button.js'
 
 interface TxSnapshot {
   amount: string
-  asset: string
+  symbolName: string
+  networkName: string
   toAddress: string
-  chain: string
 }
 
 const COIN_BG: Record<string, string> = {
   BTC: 'bg-[#f7931a]', ETH: 'bg-[#627eea]', XRP: 'bg-[#23292f]',
-  USDC: 'bg-[#2775ca]', USDT: 'bg-[#26a17b]',
+  USDC: 'bg-[#2775ca]', USDT: 'bg-[#26a17b]', BNB: 'bg-[#f0b90b]',
 }
 const COIN_INIT: Record<string, string> = {
-  BTC: '₿', ETH: 'Ξ', XRP: '✕', USDC: 'UC', USDT: 'UT',
+  BTC: '₿', ETH: 'Ξ', XRP: '✕', USDC: 'UC', USDT: 'UT', BNB: 'BN',
 }
 
 function truncate(s: string, head = 8, tail = 6) {
@@ -57,12 +57,12 @@ export function SendDone() {
         {/* Token + amount */}
         {tx && (
           <div className="flex items-center gap-3 bg-[#f2f4f6] rounded-[14px] p-4 mb-4">
-            <div className={`w-[46px] h-[46px] rounded-full flex items-center justify-center font-bold text-white text-[15px] flex-shrink-0 ${COIN_BG[tx.asset] ?? 'bg-ink-2'}`}>
-              {COIN_INIT[tx.asset] ?? tx.asset.slice(0, 2)}
+            <div className={`w-[46px] h-[46px] rounded-full flex items-center justify-center font-bold text-white text-[15px] flex-shrink-0 ${COIN_BG[tx.symbolName] ?? 'bg-ink-2'}`}>
+              {COIN_INIT[tx.symbolName] ?? tx.symbolName.slice(0, 2)}
             </div>
             <div className="flex-1">
-              <div className="text-[20px] font-bold tabular-nums">{tx.amount} {tx.asset}</div>
-              <div className="text-xs text-ink-2 mt-[2px]">收款：{truncate(tx.toAddress)}</div>
+              <div className="text-[20px] font-bold tabular-nums">{tx.amount} {tx.symbolName}</div>
+              <div className="text-xs text-ink-2 mt-[2px]">{tx.networkName} · 收款：{truncate(tx.toAddress)}</div>
             </div>
           </div>
         )}

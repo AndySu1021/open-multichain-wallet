@@ -1,12 +1,9 @@
 import { z } from 'zod'
 
-const ChainSchema = z.enum(['eth', 'btc', 'xrp', 'bsc'])
-const AssetSymbolSchema = z.enum(['BTC', 'ETH', 'USDC', 'USDT', 'XRP', 'BNB'])
-
 export const SendSchema = z.object({
-  chain: ChainSchema,
+  networkId: z.number().int().positive(),
+  symbolId: z.number().int().positive(),
   toAddress: z.string().min(1),
-  asset: AssetSymbolSchema,
   amount: z.string().regex(/^\d+(\.\d+)?$/, 'Invalid amount'),
 })
 

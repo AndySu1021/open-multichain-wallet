@@ -1,15 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { SendSchema } from '@fox-wallet/shared'
-import type { SendInput, FeeEstimate, Chain, AssetSymbol, AssetBalance, AssetItem } from '@fox-wallet/shared'
+import type { FeeEstimate, Chain, AssetSymbol, AssetBalance, AssetItem } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
 import { usePendingTx } from '../store/pendingTx.js'
 import { Button } from '../components/ui/Button.js'
 import { Input } from '../components/ui/Input.js'
-import { useState } from 'react'
 
 const PROTOCOL_TO_CHAIN: Record<string, Chain> = { ERC20: 'eth', BTC: 'btc', XRP: 'xrp', BEP20: 'bsc' }
 const CHAIN_TO_PROTOCOL: Record<Chain, string> = { eth: 'ERC20', btc: 'BTC', xrp: 'XRP', bsc: 'BEP20' }
@@ -19,6 +18,14 @@ const PROTOCOL_COLOR: Record<string, string> = {
   XRP: 'bg-[#23292f]',
   BEP20: 'bg-[#f0b90b]',
 }
+
+const SendFormSchema = z.object({
+  asset: z.string().min(1),
+  chain: z.string().min(1),
+  toAddress: z.string().min(1),
+  amount: z.string().regex(/^\d+(\.\d+)?$/, '金額格式不正確'),
+})
+type SendFormInput = z.infer<typeof SendFormSchema>
 
 export function Send() {
   const nav = useNavigate()
@@ -35,8 +42,8 @@ export function Send() {
     ? (preSelected.symbolName as AssetSymbol)
     : 'ETH'
 
-  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<SendInput>({
-    resolver: zodResolver(SendSchema),
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<SendFormInput>({
+    resolver: zodResolver(SendFormSchema),
     defaultValues: { chain: defaultChain, asset: defaultAsset },
   })
 
@@ -57,16 +64,12 @@ export function Send() {
   const selectedAsset = watch('asset') as AssetSymbol
   const selectedChain = watch('chain') as Chain
 
-  // Unique symbols from DB
   const allSymbols = [...new Set(allAssets.map((a) => a.symbol.name))]
 
-  // Networks that support the currently selected symbol
   const validNetworks = allAssets
     .filter((a) => a.symbol.name === selectedAsset)
     .map((a) => ({ protocol: a.network.protocol, name: a.network.name, imageUrl: a.network.imageUrl }))
 
-  // When asset changes: auto-select chain if only one network supports it,
-  // or reset chain if current chain doesn't support this asset
   useEffect(() => {
     if (validNetworks.length === 0) return
     const currentProtocol = CHAIN_TO_PROTOCOL[selectedChain]
@@ -81,11 +84,26 @@ export function Send() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAsset])
 
-  async function onSubmit(data: SendInput) {
+  async function onSubmit(data: SendFormInput) {
     setApiError(null)
+    const currentProtocol = CHAIN_TO_PROTOCOL[data.chain as Chain]
+    const currentAssetItem = allAssets.find(
+      (a) => a.symbol.name === data.asset && a.network.protocol === currentProtocol
+    )
+    if (!currentAssetItem) {
+      setApiError('找不到對應的資產')
+      return
+    }
+
+    const payload = {
+      networkId: currentAssetItem.network.id,
+      symbolId: currentAssetItem.symbol.id,
+      toAddress: data.toAddress,
+      amount: data.amount,
+    }
     try {
-      const fee = await api.post<FeeEstimate>('/tx/estimate', data)
-      setPending(data, fee)
+      const fee = await api.post<FeeEstimate>('/tx/estimate', payload)
+      setPending(payload, fee, data.asset, currentAssetItem.network.name)
       nav('/send/confirm', { state: { preSelected } })
     } catch (e) {
       setApiError(e instanceof Error ? e.message : '無法預估費用')
@@ -125,7 +143,7 @@ export function Send() {
             </select>
           </div>
 
-          {/* Chain — only shows networks valid for selected asset */}
+          {/* Network */}
           <div className="mb-[14px]">
             <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">網路（鏈）</label>
             <div className="relative">

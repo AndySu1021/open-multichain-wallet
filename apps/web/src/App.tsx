@@ -19,11 +19,16 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+function RootRedirect() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
+}
+
 export function App() {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/auth/callback" element={<AuthCallback />} />

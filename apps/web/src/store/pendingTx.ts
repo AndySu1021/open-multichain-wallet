@@ -4,13 +4,17 @@ import type { SendInput, FeeEstimate } from '@fox-wallet/shared'
 interface PendingTxState {
   form: SendInput | null
   fee: FeeEstimate | null
-  set: (form: SendInput, fee: FeeEstimate) => void
+  symbolName: string | null
+  networkName: string | null
+  set: (form: SendInput, fee: FeeEstimate, symbolName: string, networkName: string) => void
   clear: () => void
 }
 
 export const usePendingTx = create<PendingTxState>((set) => ({
   form: null,
   fee: null,
-  set: (form, fee) => set({ form, fee }),
-  clear: () => set({ form: null, fee: null }),
+  symbolName: null,
+  networkName: null,
+  set: (form, fee, symbolName, networkName) => set({ form, fee, symbolName, networkName }),
+  clear: () => set({ form: null, fee: null, symbolName: null, networkName: null }),
 }))
