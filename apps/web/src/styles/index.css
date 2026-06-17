@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-bg text-ink font-sans;
+  }
+}
+
+@layer utilities {
+  .screen-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .screen-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}

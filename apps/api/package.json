@@ -1,0 +1,35 @@
+{
+  "name": "@fox-wallet/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "prisma": "prisma",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.0",
+    "@fastify/jwt": "^9.0.0",
+    "@fastify/oauth2": "^7.0.0",
+    "@fastify/rate-limit": "^11.0.0",
+    "@fox-wallet/shared": "workspace:*",
+    "@prisma/client": "^5.17.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.1.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.14.0",
+    "prisma": "^5.17.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
