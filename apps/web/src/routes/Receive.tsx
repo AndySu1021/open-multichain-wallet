@@ -7,6 +7,15 @@ import { api } from '../api/client.js'
 import { BottomNav } from '../components/ui/BottomNav.js'
 import { LoadingState } from '../components/ui/States.js'
 
+const PROTOCOL_COLOR: Record<string, string> = {
+  BTC: 'bg-[#f7931a]',
+  ERC20: 'bg-[#627eea]',
+  XRP: 'bg-[#23292f]',
+  BEP20: 'bg-[#f0b90b]',
+  SOL: 'bg-[#9945ff]',
+  ADA: 'bg-[#0033ad]',
+}
+
 function networkWarnText(protocol: string, allNetworks: NetworkItem[]): string {
   const others = allNetworks.filter((n) => n.protocol !== protocol).map((n) => n.name).join('、')
   return `僅傳送對應此網路的資產到此地址。傳入 ${others} 資產將永久遺失。`
@@ -64,20 +73,35 @@ export function Receive() {
         ) : (
           <>
             {/* Network picker */}
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {networks.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => setNetworkId(n.id)}
-                  className={`flex-1 min-w-[80px] py-2 rounded-xl text-[13px] font-semibold border transition-colors ${
-                    selected?.id === n.id
-                      ? 'border-orange text-orange bg-[#fff6ee]'
-                      : 'border-line text-ink-2 bg-white hover:bg-[#fafbfc]'
-                  }`}
-                >
-                  {n.name}
-                </button>
-              ))}
+            <div className="mb-4 text-left">
+              <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">網路（鏈）</label>
+              <div className="relative">
+                <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
+                  {selected?.imageUrl
+                    ? <img src={`/api${selected.imageUrl}`} className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0" />
+                    : <span className={`w-[26px] h-[26px] rounded-full flex-shrink-0 ${PROTOCOL_COLOR[selected?.protocol ?? ''] ?? 'bg-ink-2'}`} />
+                  }
+                  <div className="flex-1">
+                    <b className="text-[14px]">{selected?.name ?? ''}</b>
+                  </div>
+                  {networks.length > 1 && (
+                    <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
+                      <path d="M3 4.5 6 7.5 9 4.5" />
+                    </svg>
+                  )}
+                </div>
+                {networks.length > 1 && (
+                  <select
+                    value={selected?.id ?? ''}
+                    onChange={(e) => setNetworkId(Number(e.target.value))}
+                    className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                  >
+                    {networks.map((n) => (
+                      <option key={n.id} value={n.id}>{n.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
             {/* QR code */}
