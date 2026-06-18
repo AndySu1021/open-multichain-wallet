@@ -30,6 +30,7 @@ const SendFormSchema = z.object({
   chain: z.string().min(1),
   toAddress: z.string().min(1),
   amount: z.string().regex(/^\d+(\.\d+)?$/, '金額格式不正確'),
+  destinationTag: z.string().regex(/^\d*$/, 'Tag 必須為數字').optional(),
 })
 type SendFormInput = z.infer<typeof SendFormSchema>
 
@@ -107,6 +108,7 @@ export function Send() {
       symbolId: currentAssetItem.symbol.id,
       toAddress: data.toAddress,
       amount: data.amount,
+      ...(data.chain === 'xrp' && data.destinationTag ? { destinationTag: parseInt(data.destinationTag, 10) } : {}),
     }
     try {
       const fee = await api.post<FeeEstimate>('/tx/estimate', payload)
@@ -190,6 +192,22 @@ export function Send() {
           </div>
 
           <Input label="收款地址" placeholder="0x… 或貼上" {...register('toAddress')} error={errors.toAddress?.message} />
+
+          {selectedChain === 'xrp' && (
+            <div className="mb-[14px]">
+              <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">
+                Destination Tag
+                <span className="ml-1 font-normal text-ink-2">（選填）</span>
+              </label>
+              <input
+                {...register('destinationTag')}
+                placeholder="例如：12345678"
+                inputMode="numeric"
+                className="w-full border border-line rounded-[10px] px-[13px] py-3 text-sm font-sans bg-white focus:outline-none focus:ring-2 focus:ring-orange/25 focus:border-orange"
+              />
+              {errors.destinationTag && <p className="mt-1 text-xs text-red-500">{errors.destinationTag.message}</p>}
+            </div>
+          )}
 
           {/* Amount */}
           <div className="mb-[14px]">

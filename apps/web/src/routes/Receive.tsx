@@ -37,7 +37,7 @@ export function Receive() {
 
   const { data: addressData, isLoading: addressLoading, error: addressError } = useQuery({
     queryKey: ['address', selected?.id],
-    queryFn: () => api.get<{ networkId: number; address: string }>(`/wallet/address?networkId=${selected!.id}`),
+    queryFn: () => api.get<{ networkId: number; address: string; memo?: string }>(`/wallet/address?networkId=${selected!.id}`),
     enabled: !!selected,
   })
 
@@ -131,6 +131,19 @@ export function Receive() {
             ) : (
               <div className="font-semibold break-all text-[13px] px-3 leading-relaxed text-ink">
                 {addressData?.address ?? '—'}
+              </div>
+            )}
+
+            {selected?.protocol === 'XRP' && (
+              <div className="mt-3 mx-auto inline-flex items-center gap-2 bg-[#f4f5f7] rounded-[8px] px-3 py-[6px]">
+                <span className="text-[12px] text-ink-2">Destination Tag</span>
+                {addressLoading ? (
+                  <span className="text-[12px] text-ink-2 animate-pulse">—</span>
+                ) : (
+                  <span className="text-[13px] font-bold text-ink tabular-nums">
+                    {addressData?.memo ?? '—'}
+                  </span>
+                )}
               </div>
             )}
 

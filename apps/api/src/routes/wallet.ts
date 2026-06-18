@@ -22,19 +22,20 @@ const GetAddressSchema = z.object({
   networkId: z.coerce.number().int().positive(),
 })
 
-async function getOrCreateAddress(userId: bigint, networkId: number): Promise<string> {
+async function getOrCreateAddress(userId: bigint, networkId: number): Promise<{ address: string; memo: string | null }> {
   const existing = await prisma.walletAddress.findFirst({ where: { userId, networkId } })
-  if (existing) return existing.address
+  if (existing) return { address: existing.address, memo: existing.memo }
 
   const network = await prisma.network.findUnique({ where: { id: networkId } })
   if (!network) throw new Error(`Network ${networkId} not found`)
 
   const chain = PROTOCOL_TO_CHAIN[network.protocol] ?? 'eth'
   const { address } = await keyManager.createWallet(userId.toString(), chain)
+  const memo = chain === 'xrp' ? String(Math.floor(Math.random() * 999_999_999) + 1) : null
   await prisma.walletAddress.create({
-    data: { userId, networkId, address, encryptedKeyRef: network.hdDerivationPath ?? 'unknown' },
+    data: { userId, networkId, address, encryptedKeyRef: network.hdDerivationPath ?? 'unknown', memo },
   })
-  return address
+  return { address, memo }
 }
 
 export async function walletRoutes(app: FastifyInstance) {
@@ -47,8 +48,8 @@ export async function walletRoutes(app: FastifyInstance) {
 
     const userId = BigInt(request.user.sub)
     try {
-      const address = await getOrCreateAddress(userId, query.data.networkId)
-      return reply.send({ ok: true, data: { networkId: query.data.networkId, address } })
+      const { address, memo } = await getOrCreateAddress(userId, query.data.networkId)
+      return reply.send({ ok: true, data: { networkId: query.data.networkId, address, ...(memo ? { memo } : {}) } })
     } catch (e) {
       const err = Errors.NotFound('Network')
       return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })

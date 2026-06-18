@@ -5,6 +5,7 @@ export const SendSchema = z.object({
   symbolId: z.number().int().positive(),
   toAddress: z.string().min(1),
   amount: z.string().regex(/^\d+(\.\d+)?$/, 'Invalid amount'),
+  destinationTag: z.number().int().nonnegative().optional(),
 })
 
 export const EstimateFeeSchema = SendSchema

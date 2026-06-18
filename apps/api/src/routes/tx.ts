@@ -34,7 +34,7 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const userId = BigInt(request.user.sub)
-    const { networkId, symbolId, toAddress, amount } = body.data
+    const { networkId, symbolId, toAddress, amount, destinationTag } = body.data
 
     const [network, symbol, fromAddress] = await Promise.all([
       prisma.network.findUnique({ where: { id: networkId } }),
@@ -62,6 +62,7 @@ export async function txRoutes(app: FastifyInstance) {
       toAddress,
       asset: symbol.name as AssetSymbol,
       amount,
+      ...(destinationTag !== undefined ? { destinationTag } : {}),
     })
     return reply.send({ ok: true, data: fee })
   })
@@ -73,7 +74,7 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const userId = BigInt(request.user.sub)
-    const { networkId, symbolId, toAddress, amount } = body.data
+    const { networkId, symbolId, toAddress, amount, destinationTag } = body.data
 
     const [network, symbol, fromAddress] = await Promise.all([
       prisma.network.findUnique({ where: { id: networkId } }),
@@ -96,7 +97,7 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const adapter = getAdapter(chain)
-    const params = { chain, fromAddress, toAddress, asset: symbol.name as AssetSymbol, amount }
+    const params = { chain, fromAddress, toAddress, asset: symbol.name as AssetSymbol, amount, ...(destinationTag !== undefined ? { destinationTag } : {}) }
     const rawTx = await adapter.buildTransaction(params)
     const signedTx = await keyManager.signTransaction(userId.toString(), chain, rawTx)
     const txHash = await adapter.broadcastTransaction(signedTx)

@@ -71,6 +71,7 @@ export function SendConfirm() {
           {[
             { label: '網路', value: networkName },
             { label: '收款地址', value: truncate(form.toAddress) },
+            ...(form.destinationTag !== undefined ? [{ label: 'Destination Tag', value: String(form.destinationTag) }] : []),
           ].map(({ label, value }) => (
             <div key={label} className="flex justify-between py-[5px]">
               <span className="text-ink-2">{label}</span>
