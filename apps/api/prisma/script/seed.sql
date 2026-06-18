@@ -1,19 +1,20 @@
 -- ── Networks ──────────────────────────────────────────────────────────────────
 -- id 1 Ethereum | 2 Bitcoin | 3 XRP Ledger | 4 Binance Smart Chain | 5 Solana | 6 Cardano
-INSERT INTO network (id, name, protocol, status, image_url, explorer_url, hd_derivation_path, hd_curve)
-VALUES (1, 'Ethereum',            'ERC20', 1, '/icons/network/ETH.png', 'https://sepolia.etherscan.io',                  $$m/44'/60'/0'/0/0$$,  'secp256k1'),
-       (2, 'Bitcoin',             'BTC',   1, '/icons/network/BTC.png', 'https://blockstream.info/testnet',              $$m/44'/1'/0'/0/0$$,   'secp256k1'),
-       (3, 'XRP Ledger',          'XRP',   1, '/icons/network/XRP.png', 'https://testnet.xrpl.org',                     $$m/44'/144'/0'/0/0$$, 'secp256k1'),
-       (4, 'Binance Smart Chain', 'BEP20', 1, '/icons/network/BNB.png', 'https://testnet.bscscan.com',                  $$m/44'/60'/0'/0/0$$,  'secp256k1'),
-       (5, 'Solana',              'SOL',   1, '/icons/network/SOL.png', 'https://explorer.solana.com/?cluster=testnet', $$m/44'/501'/0'$$,     'ed25519'),
-       (6, 'Cardano',             'ADA',   1, '/icons/network/ADA.png', 'https://preprod.cardanoscan.io',               $$m/1852'/1815'/0'/0/0$$, 'ed25519')
+INSERT INTO network (id, name, protocol, status, image_url, explorer_url, hd_derivation_path, hd_curve, confirmation_blocks)
+VALUES (1, 'Ethereum',            'ERC20', 1, '/icons/network/ETH.png', 'https://sepolia.etherscan.io',                  $$m/44'/60'/0'/0/0$$,    'secp256k1', 12),
+       (2, 'Bitcoin',             'BTC',   1, '/icons/network/BTC.png', 'https://blockstream.info/testnet',              $$m/44'/1'/0'/0/0$$,     'secp256k1', 6),
+       (3, 'XRP Ledger',          'XRP',   1, '/icons/network/XRP.png', 'https://testnet.xrpl.org',                     $$m/44'/144'/0'/0/0$$,   'secp256k1', 1),
+       (4, 'Binance Smart Chain', 'BEP20', 1, '/icons/network/BNB.png', 'https://testnet.bscscan.com',                  $$m/44'/60'/0'/0/0$$,    'secp256k1', 12),
+       (5, 'Solana',              'SOL',   1, '/icons/network/SOL.png', 'https://explorer.solana.com/?cluster=testnet', $$m/44'/501'/0'$$,       'ed25519',   32),
+       (6, 'Cardano',             'ADA',   1, '/icons/network/ADA.png', 'https://preprod.cardanoscan.io',               $$m/1852'/1815'/0'/0/0$$, 'ed25519',  10)
 ON CONFLICT (id) DO UPDATE SET
   name               = EXCLUDED.name,
   protocol           = EXCLUDED.protocol,
   image_url          = EXCLUDED.image_url,
   explorer_url       = EXCLUDED.explorer_url,
   hd_derivation_path = EXCLUDED.hd_derivation_path,
-  hd_curve           = EXCLUDED.hd_curve;
+  hd_curve           = EXCLUDED.hd_curve,
+  confirmation_blocks = EXCLUDED.confirmation_blocks;
 
 -- ── Symbols ───────────────────────────────────────────────────────────────────
 -- id 1 ETH | 2 BTC | 3 XRP | 4 BNB | 5 USDT | 6 USDC | 7 SOL | 8 ADA

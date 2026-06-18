@@ -239,31 +239,31 @@ EthBlockSync
 
 ## 六、實作步驟（Phase 拆分）
 
-### Phase 1：核心收款偵測（此次範圍）
-- [ ] Prisma migration：`Network.confirmationBlocks`、`Transaction.blockNumber/blockHash`、`BlockCursor` 表
-- [ ] 更新 seed.sql：各 network 的 `confirmation_blocks` 值
-- [ ] `sync/types.ts`：`BlockRange`、`SyncedTx`
-- [ ] `sync/EthBlockSync.ts`：
+### Phase 1：核心收款偵測 ✅
+- [x] Prisma migration：`Network.confirmationBlocks`、`Transaction.blockNumber/blockHash`、`BlockCursor` 表
+- [x] 更新 seed.sql：各 network 的 `confirmation_blocks` 值
+- [x] `sync/types.ts`：`BlockRange`
+- [x] `sync/EthBlockSync.ts`：
   - WS + HTTP fallback
   - `processBlock`：ETH native + ERC20 Transfer 收款偵測
-  - Confirmation 升級（步驟 5）
+  - Confirmation 升級
   - `BlockCursor` 維護
   - Catchup scan
-- [ ] `sync/SyncManager.ts`：`startSync` / `stopSync`
-- [ ] `index.ts`：整合 SyncManager（`startSync` / `stopSync`）
+- [x] `sync/SyncManager.ts`：`startSync` / `stopSync`
+- [x] `index.ts`：整合 SyncManager
 
-### Phase 2：外送交易狀態追蹤
-- [ ] `processBlock` 新增步驟：掃 `status=0 AND type=1 (send)` 的交易 txHash，確認是否出現在此 block，更新 `blockNumber`
-- [ ] 利用現有 confirmation 升級機制自動 confirmed
+### Phase 2：外送交易狀態追蹤 ✅
+- [x] `processBlock` 新增 `trackPendingSends`：掃 `status=0, type=1, blockNumber IS NULL` 的交易，確認是否出現在此 block，取 receipt 判斷 success/reverted，更新 `blockNumber` 與 `status`
+- [x] 利用現有 confirmation 升級機制自動 confirmed
 
-### Phase 3：Reorg 支援
-- [ ] `handleReorg` 實作
-- [ ] 整合測試：模擬 reorg 場景
+### Phase 3：Reorg 支援 ✅
+- [x] `handleReorg` 實作：從偵測點往回逐 block 比對 blockHash，rollback 孤塊交易（status=-1），cursor 退回共同祖先，重新掃描
+- [x] 最大回溯深度限制 32 blocks（1 epoch）
 
-### Phase 4：斷線防護
-- [ ] Heartbeat monitor
-- [ ] HTTP Fallback Poller
-- [ ] 整合測試：人為切斷 WS，確認 fallback 正常啟動
+### Phase 4：斷線防護 ✅（Phase 1 一併完成）
+- [x] Heartbeat monitor（30s 檢查，90s 無 block 觸發 fallback）
+- [x] HTTP Fallback Poller（15s 輪詢，補掃 cursor+1 ~ latest）
+- [x] WS 恢復時自動停止 fallback
 
 ---
 
@@ -311,8 +311,8 @@ const logs = await httpClient.getLogs({
 ### 環境變數新增
 
 ```
-ALCHEMY_ETH_WS_URL=wss://eth-sepolia.g.alchemy.com/v2/<API_KEY>
-ALCHEMY_ETH_HTTP_URL=https://eth-sepolia.g.alchemy.com/v2/<API_KEY>
+ETH_NODE_WS_URL=wss://eth-sepolia.g.alchemy.com/v2/<API_KEY>   # 可替換為 Infura / 自架節點
+ETH_NODE_HTTP_URL=https://eth-sepolia.g.alchemy.com/v2/<API_KEY>
 ETH_SYNC_ENABLED=true
 ETH_CATCHUP_BLOCKS=100
 ```

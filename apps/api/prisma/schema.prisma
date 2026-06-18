@@ -30,8 +30,9 @@ model Network {
   status            Int     @default(1)
   imageUrl          String  @map("image_url")
   explorerUrl       String? @map("explorer_url")
-  hdDerivationPath  String? @map("hd_derivation_path")
-  hdCurve           String? @map("hd_curve")
+  hdDerivationPath   String? @map("hd_derivation_path")
+  hdCurve            String? @map("hd_curve")
+  confirmationBlocks Int     @default(12) @map("confirmation_blocks")
 
   assets          Asset[]
   walletAddresses WalletAddress[]
@@ -137,6 +138,8 @@ model Transaction {
   txHash      String    @map("tx_hash")
   status      Int       @default(0)
   fee         String?
+  blockNumber BigInt?   @map("block_number")
+  blockHash   String?   @map("block_hash")
   blockTime   DateTime? @map("block_time")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -147,5 +150,16 @@ model Transaction {
 
   @@index([userId, networkId])
   @@index([txHash])
+  @@index([networkId, blockNumber])
   @@map("transaction")
+}
+
+model BlockCursor {
+  id          Int      @id @default(autoincrement())
+  networkId   Int      @unique @map("network_id")
+  blockNumber BigInt   @map("block_number")
+  blockHash   String   @map("block_hash")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("block_cursor")
 }
