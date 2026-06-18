@@ -4,10 +4,10 @@ import type { Chain, TxType, AssetSymbol } from '@fox-wallet/shared'
 import { prisma } from '../db/client.js'
 import { requireAuth } from '../middleware/auth.js'
 import { getAdapter } from '../chains/registry.js'
-import { MockKeyManager } from '../keymanager/MockKeyManager.js'
+import { HdKeyManager } from '../keymanager/HdKeyManager.js'
 import { Errors } from '../lib/errors.js'
 
-const keyManager = new MockKeyManager()
+const keyManager = new HdKeyManager()
 
 const PROTOCOL_TO_CHAIN: Record<string, Chain> = { ERC20: 'eth', BTC: 'btc', XRP: 'xrp', BEP20: 'bsc' }
 
@@ -36,10 +36,11 @@ export async function txRoutes(app: FastifyInstance) {
     const userId = BigInt(request.user.sub)
     const { networkId, symbolId, toAddress, amount, destinationTag } = body.data
 
-    const [network, symbol, fromAddress] = await Promise.all([
+    const [network, symbol, fromAddress, asset] = await Promise.all([
       prisma.network.findUnique({ where: { id: networkId } }),
       prisma.symbol.findUnique({ where: { id: symbolId } }),
       getAddressByNetworkId(userId, networkId),
+      prisma.asset.findFirst({ where: { networkId, symbolId } }),
     ])
 
     if (!network || !symbol) {
@@ -62,6 +63,7 @@ export async function txRoutes(app: FastifyInstance) {
       toAddress,
       asset: symbol.name as AssetSymbol,
       amount,
+      ...(asset?.contractAddress ? { contractAddress: asset.contractAddress, decimals: asset.decimals } : {}),
       ...(destinationTag !== undefined ? { destinationTag } : {}),
     })
     return reply.send({ ok: true, data: fee })
@@ -76,10 +78,11 @@ export async function txRoutes(app: FastifyInstance) {
     const userId = BigInt(request.user.sub)
     const { networkId, symbolId, toAddress, amount, destinationTag } = body.data
 
-    const [network, symbol, fromAddress] = await Promise.all([
+    const [network, symbol, fromAddress, asset] = await Promise.all([
       prisma.network.findUnique({ where: { id: networkId } }),
       prisma.symbol.findUnique({ where: { id: symbolId } }),
       getAddressByNetworkId(userId, networkId),
+      prisma.asset.findFirst({ where: { networkId, symbolId } }),
     ])
 
     if (!network || !symbol) {
@@ -97,7 +100,15 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const adapter = getAdapter(chain)
-    const params = { chain, fromAddress, toAddress, asset: symbol.name as AssetSymbol, amount, ...(destinationTag !== undefined ? { destinationTag } : {}) }
+    const params = {
+      chain,
+      fromAddress,
+      toAddress,
+      asset: symbol.name as AssetSymbol,
+      amount,
+      ...(asset?.contractAddress ? { contractAddress: asset.contractAddress, decimals: asset.decimals } : {}),
+      ...(destinationTag !== undefined ? { destinationTag } : {}),
+    }
     const rawTx = await adapter.buildTransaction(params)
     const signedTx = await keyManager.signTransaction(userId.toString(), chain, rawTx)
     const txHash = await adapter.broadcastTransaction(signedTx)

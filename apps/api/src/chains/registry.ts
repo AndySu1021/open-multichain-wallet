@@ -6,7 +6,6 @@ import { XrpAdapter } from './XrpAdapter.js'
 import { BscAdapter } from './BscAdapter.js'
 import { SolAdapter } from './SolAdapter.js'
 import { AdaAdapter } from './AdaAdapter.js'
-
 const adapters: Record<Chain, ChainAdapter> = {
   eth: new EthAdapter(),
   btc: new BtcAdapter(),

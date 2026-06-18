@@ -251,17 +251,38 @@ export class EthBlockSync {
     // Track pending outgoing transactions that landed in this block
     await this.trackPendingSends(block)
 
-    // Upgrade pending receives to confirmed once N blocks have passed
+    // Upgrade pending transactions to confirmed once N blocks have passed.
+    // For receives (type 2) we also credit the amount to UserAsset.balance.
+    const confirmThreshold = block.number - BigInt(confirmationBlocks)
+    const pendingConfirmFilter = {
+      networkId,
+      status: 0,
+      blockNumber: { not: null, lte: confirmThreshold },
+    } as const
+
+    // Fetch pending receives before the status update so we know what to credit.
+    const toCredit = await prisma.transaction.findMany({
+      where: { ...pendingConfirmFilter, type: 2 },
+      select: { userId: true, symbolId: true, amount: true },
+    })
+
     const upgraded = await prisma.transaction.updateMany({
-      where: {
-        networkId,
-        status: 0,
-        blockNumber: { not: null, lte: block.number - BigInt(confirmationBlocks) },
-      },
+      where: pendingConfirmFilter,
       data: { status: 1 },
     })
+
     if (upgraded.count > 0) {
       console.log(`[EthSync:${networkId}] confirmed ${upgraded.count} tx(s) at block ${block.number}`)
+
+      for (const tx of toCredit) {
+        await prisma.userAsset.update({
+          where: {
+            userId_networkId_symbolId: { userId: tx.userId, networkId, symbolId: tx.symbolId },
+          },
+          data: { balance: { increment: tx.amount } },
+        })
+        console.log(`[EthSync:${networkId}] credited ${tx.amount} → user ${tx.userId} symbolId=${tx.symbolId}`)
+      }
     }
 
     await this.saveCursor(block.number, block.hash)

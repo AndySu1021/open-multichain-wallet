@@ -45,6 +45,8 @@ export interface SendParams {
   asset: AssetSymbol
   amount: string
   destinationTag?: number
+  contractAddress?: string
+  decimals?: number
 }
 
 export interface FeeEstimate {

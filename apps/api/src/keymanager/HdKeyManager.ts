@@ -1,7 +1,7 @@
 import { generateMnemonic, mnemonicToSeedSync, mnemonicToEntropy } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { HDKey } from '@scure/bip32'
-import { privateKeyToAddress } from 'viem/accounts'
+import { privateKeyToAddress, privateKeyToAccount } from 'viem/accounts'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { ed25519 } from '@noble/curves/ed25519.js'
 import { sha256 } from '@noble/hashes/sha2.js'
@@ -248,13 +248,20 @@ export class HdKeyManager implements KeyManager {
     return record?.address ?? null
   }
 
-  async signTransaction(userId: string, chain: Chain, _rawTx: unknown): Promise<string> {
-    // TODO Step 6: implement real signing once chain adapters produce real transactions.
+  async signTransaction(userId: string, chain: Chain, rawTx: unknown): Promise<string> {
     const { path, curve } = await this.getDerivationConfig(chain)
     const seed = await this.getOrCreateSeed(BigInt(userId))
-    if (curve === 'secp256k1') {
-      this.deriveSecp256k1Key(seed, path) // validate key derivation
+
+    if ((chain === 'eth' || chain === 'bsc') && curve === 'secp256k1') {
+      const privateKey = this.deriveSecp256k1Key(seed, path)
+      const account = privateKeyToAccount(
+        `0x${Buffer.from(privateKey).toString('hex')}` as `0x${string}`,
+      )
+      // rawTx is an EthUnsignedTx produced by EthAdapter / BscAdapter
+      return account.signTransaction(rawTx as Parameters<typeof account.signTransaction>[0])
     }
+
+    // Other chains: signing not yet implemented in this keymanager
     return '0x' + Buffer.from(randomBytes(65)).toString('hex')
   }
 }
