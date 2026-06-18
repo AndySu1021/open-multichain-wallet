@@ -1,12 +1,39 @@
 -- ── Networks ──────────────────────────────────────────────────────────────────
 -- id 1 Ethereum | 2 Bitcoin | 3 XRP Ledger | 4 Binance Smart Chain | 5 Solana | 6 Cardano
-INSERT INTO network (id, name, protocol, status, image_url, explorer_url, hd_derivation_path, hd_curve, confirmation_blocks)
-VALUES (1, 'Ethereum',            'ERC20', 1, '/icons/network/ETH.png', 'https://sepolia.etherscan.io',                  $$m/44'/60'/0'/0/0$$,    'secp256k1', 12),
-       (2, 'Bitcoin',             'BTC',   1, '/icons/network/BTC.png', 'https://blockstream.info/testnet',              $$m/44'/1'/0'/0/0$$,     'secp256k1', 6),
-       (3, 'XRP Ledger',          'XRP',   1, '/icons/network/XRP.png', 'https://testnet.xrpl.org',                     $$m/44'/144'/0'/0/0$$,   'secp256k1', 1),
-       (4, 'Binance Smart Chain', 'BEP20', 1, '/icons/network/BNB.png', 'https://testnet.bscscan.com',                  $$m/44'/60'/0'/0/0$$,    'secp256k1', 12),
-       (5, 'Solana',              'SOL',   1, '/icons/network/SOL.png', 'https://explorer.solana.com/?cluster=testnet', $$m/44'/501'/0'$$,       'ed25519',   32),
-       (6, 'Cardano',             'ADA',   1, '/icons/network/ADA.png', 'https://preprod.cardanoscan.io',               $$m/1852'/1815'/0'/0/0$$, 'ed25519',  10)
+--
+-- evm_chain_id: EVM numeric chain ID (NULL for non-EVM chains)
+--   11155111 = Sepolia | 97 = BSC Testnet | 1 = Mainnet | 56 = BSC | 17000 = Holesky
+--
+-- node_ws_url / node_http_url: set by admin to enable sync.
+--   e.g. UPDATE network SET sync_enabled=true,
+--          node_ws_url='wss://sepolia.infura.io/v3/<KEY>',
+--          node_http_url='https://sepolia.infura.io/v3/<KEY>'
+--        WHERE id = 1;
+INSERT INTO network (
+  id, name, protocol, status, image_url, explorer_url,
+  hd_derivation_path, hd_curve,
+  confirmation_blocks, evm_chain_id,
+  sync_enabled, node_ws_url, node_http_url, catchup_blocks
+)
+VALUES
+  (1, 'Ethereum',            'ERC20', 1, '/icons/network/ETH.png', 'https://sepolia.etherscan.io',
+   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12, 11155111, false, NULL, NULL, 100),
+
+  (2, 'Bitcoin',             'BTC',   1, '/icons/network/BTC.png', 'https://blockstream.info/testnet',
+   $$m/44'/1'/0'/0/0$$,     'secp256k1',  6,     NULL, false, NULL, NULL, 100),
+
+  (3, 'XRP Ledger',          'XRP',   1, '/icons/network/XRP.png', 'https://testnet.xrpl.org',
+   $$m/44'/144'/0'/0/0$$,   'secp256k1',  1,     NULL, false, NULL, NULL, 100),
+
+  (4, 'Binance Smart Chain', 'BEP20', 1, '/icons/network/BNB.png', 'https://testnet.bscscan.com',
+   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12,       97, false, NULL, NULL, 100),
+
+  (5, 'Solana',              'SOL',   1, '/icons/network/SOL.png', 'https://explorer.solana.com/?cluster=testnet',
+   $$m/44'/501'/0'$$,        'ed25519', 32,     NULL, false, NULL, NULL, 100),
+
+  (6, 'Cardano',             'ADA',   1, '/icons/network/ADA.png', 'https://preprod.cardanoscan.io',
+   $$m/1852'/1815'/0'/0/0$$, 'ed25519', 10,     NULL, false, NULL, NULL, 100)
+
 ON CONFLICT (id) DO UPDATE SET
   name               = EXCLUDED.name,
   protocol           = EXCLUDED.protocol,
@@ -14,7 +41,11 @@ ON CONFLICT (id) DO UPDATE SET
   explorer_url       = EXCLUDED.explorer_url,
   hd_derivation_path = EXCLUDED.hd_derivation_path,
   hd_curve           = EXCLUDED.hd_curve,
-  confirmation_blocks = EXCLUDED.confirmation_blocks;
+  confirmation_blocks = EXCLUDED.confirmation_blocks,
+  evm_chain_id       = EXCLUDED.evm_chain_id,
+  catchup_blocks     = EXCLUDED.catchup_blocks;
+  -- sync_enabled / node_ws_url / node_http_url intentionally NOT overwritten
+  -- so admin-configured values survive a re-seed.
 
 -- ── Symbols ───────────────────────────────────────────────────────────────────
 -- id 1 ETH | 2 BTC | 3 XRP | 4 BNB | 5 USDT | 6 USDC | 7 SOL | 8 ADA
@@ -32,17 +63,22 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url;
 
 -- ── Assets ────────────────────────────────────────────────────────────────────
-INSERT INTO asset (symbol_id, network_id, contract_address, status)
-VALUES (1, 1, NULL,                                           1),  -- ETH  / Ethereum
-       (2, 2, NULL,                                           1),  -- BTC  / Bitcoin
-       (3, 3, NULL,                                           1),  -- XRP  / XRP Ledger
-       (4, 4, NULL,                                           1),  -- BNB  / Binance Smart Chain
-       (5, 1, '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',  1),  -- USDT / Ethereum (Sepolia)
-       (6, 1, '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',  1),  -- USDC / Ethereum (Sepolia)
-       (5, 4, '0x337610d27c682E347C9cD60BD4b3b107C9d34dD9',  1),  -- USDT / Binance Smart Chain
-       (7, 5, NULL,                                           1),  -- SOL  / Solana
-       (8, 6, NULL,                                           1)   -- ADA  / Cardano
-ON CONFLICT (symbol_id, network_id) DO NOTHING;
+-- decimals: token precision used to convert raw on-chain amounts to display units
+--   ETH/BNB 18 | BTC 8 | XRP 6 | USDT(ERC20) 6 | USDC 6 | USDT(BEP20) 18 | SOL 9 | ADA 6
+INSERT INTO asset (symbol_id, network_id, contract_address, decimals, status)
+VALUES
+  (1, 1, NULL,                                           18, 1),  -- ETH  / Ethereum
+  (2, 2, NULL,                                            8, 1),  -- BTC  / Bitcoin
+  (3, 3, NULL,                                            6, 1),  -- XRP  / XRP Ledger
+  (4, 4, NULL,                                           18, 1),  -- BNB  / Binance Smart Chain
+  (5, 1, '0x7169D38820dfd117C3FA1f22a697dba58d90BA06',   6, 1),  -- USDT / Ethereum (Sepolia)
+  (6, 1, '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',   6, 1),  -- USDC / Ethereum (Sepolia)
+  (5, 4, '0x337610d27c682E347C9cD60BD4b3b107C9d34dD9',  18, 1),  -- USDT / Binance Smart Chain
+  (7, 5, NULL,                                            9, 1),  -- SOL  / Solana
+  (8, 6, NULL,                                            6, 1)   -- ADA  / Cardano
+ON CONFLICT (symbol_id, network_id) DO UPDATE SET
+  contract_address = EXCLUDED.contract_address,
+  decimals         = EXCLUDED.decimals;
 
 -- ── QuoteSymbols ──────────────────────────────────────────────────────────────
 -- id 1 USDT | 2 USD

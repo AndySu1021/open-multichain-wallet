@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -30,9 +31,14 @@ model Network {
   status            Int     @default(1)
   imageUrl          String  @map("image_url")
   explorerUrl       String? @map("explorer_url")
-  hdDerivationPath   String? @map("hd_derivation_path")
-  hdCurve            String? @map("hd_curve")
-  confirmationBlocks Int     @default(12) @map("confirmation_blocks")
+  hdDerivationPath   String?  @map("hd_derivation_path")
+  hdCurve            String?  @map("hd_curve")
+  confirmationBlocks Int      @default(12)    @map("confirmation_blocks")
+  evmChainId         Int?                     @map("evm_chain_id")
+  syncEnabled        Boolean  @default(false) @map("sync_enabled")
+  nodeWsUrl          String?                  @map("node_ws_url")
+  nodeHttpUrl        String?                  @map("node_http_url")
+  catchupBlocks      Int      @default(100)   @map("catchup_blocks")
 
   assets          Asset[]
   walletAddresses WalletAddress[]
@@ -86,6 +92,7 @@ model Asset {
   symbolId        Int     @map("symbol_id")
   networkId       Int     @map("network_id")
   contractAddress String? @map("contract_address")
+  decimals        Int     @default(18)
   status          Int     @default(1)
 
   symbol  Symbol  @relation(fields: [symbolId], references: [id])

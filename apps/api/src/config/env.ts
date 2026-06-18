@@ -19,10 +19,6 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().default(3001),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   QUOTE_SYNC_INTERVAL_MS: z.coerce.number().int().min(10_000).default(60_000),
-  ETH_NODE_WS_URL: z.string().optional(),
-  ETH_NODE_HTTP_URL: z.string().optional(),
-  ETH_SYNC_ENABLED: z.string().default('false').transform((v) => v === 'true'),
-  ETH_CATCHUP_BLOCKS: z.coerce.number().int().min(1).default(100),
 })
 
 export const env = EnvSchema.parse(process.env)
