@@ -4,14 +4,6 @@ import { api } from '../api/client.js'
 import { usePendingTx } from '../store/pendingTx.js'
 import { Button } from '../components/ui/Button.js'
 
-const COIN_BG: Record<string, string> = {
-  BTC: 'bg-[#f7931a]', ETH: 'bg-[#627eea]', XRP: 'bg-[#23292f]',
-  USDC: 'bg-[#2775ca]', USDT: 'bg-[#26a17b]', BNB: 'bg-[#f0b90b]',
-}
-const COIN_INIT: Record<string, string> = {
-  BTC: '₿', ETH: 'Ξ', XRP: '✕', USDC: 'UC', USDT: 'UT', BNB: 'BN',
-}
-
 function truncate(addr: string) {
   return addr.length > 16 ? addr.slice(0, 8) + '…' + addr.slice(-6) : addr
 }
@@ -19,7 +11,6 @@ function truncate(addr: string) {
 export function SendConfirm() {
   const nav = useNavigate()
   const { form, fee, symbolName, networkName, clear } = usePendingTx()
-  const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const leaving = useRef(false)
 
@@ -30,7 +21,6 @@ export function SendConfirm() {
 
   async function confirm() {
     if (!form || !symbolName || !networkName) return
-    setError(null)
     setIsSubmitting(true)
     try {
       const res = await api.post<{ txHash: string }>('/tx/send', form)
@@ -39,12 +29,18 @@ export function SendConfirm() {
       nav(`/send/done/${res.txHash}`, { replace: true, state: snapshot })
       clear()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Transaction failed')
-      setIsSubmitting(false)
+      const failState = {
+        error: e instanceof Error ? e.message : 'Transaction failed',
+        amount: form.amount,
+        symbolName,
+        networkName,
+        toAddress: form.toAddress,
+      }
+      leaving.current = true
+      nav('/send/fail', { replace: true, state: failState })
     }
   }
 
-  const total = (parseFloat(fee.feeUsd) || 0).toFixed(2)
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -59,9 +55,12 @@ export function SendConfirm() {
 
       <div className="screen-scroll overflow-y-auto flex-1 px-[18px] py-4 text-center">
         {/* Coin icon */}
-        <div className={`w-14 h-14 rounded-full mx-auto mt-[14px] mb-[10px] flex items-center justify-center text-white text-[20px] font-bold ${COIN_BG[symbolName] ?? 'bg-ink-2'}`}>
-          {COIN_INIT[symbolName] ?? symbolName.slice(0, 2)}
-        </div>
+        <img
+          src={`/api/icons/symbol/${symbolName}.png`}
+          alt={symbolName}
+          className="w-14 h-14 rounded-full object-cover mx-auto mt-[14px] mb-[10px]"
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
 
         <div className="text-[30px] font-bold tabular-nums">{form.amount} {symbolName}</div>
         <p className="text-ink-2 mt-1 mb-[18px] text-sm">≈ ${fee.feeUsd} USD（費用）</p>
@@ -93,8 +92,6 @@ export function SendConfirm() {
             <span className="font-semibold">{form.amount} {symbolName}</span>
           </div>
         </div>
-
-        {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
 
         <div className="mt-[14px] flex flex-col gap-[10px]">
           <Button onClick={() => void confirm()} isLoading={isSubmitting}>

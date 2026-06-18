@@ -40,18 +40,26 @@ export function Send() {
   const setPending = usePendingTx((s) => s.set)
   const [apiError, setApiError] = useState<string | null>(null)
 
-  const preSelected = (location.state as { assetBalance?: AssetBalance } | null)?.assetBalance
+  interface RetryState {
+    asset: string; chain: Chain; toAddress: string; amount: string; destinationTag?: string
+  }
+  const state = location.state as { assetBalance?: AssetBalance; retryState?: RetryState } | null
+  const retryState = state?.retryState
+  const preSelected = retryState ? undefined : state?.assetBalance
 
-  const defaultChain: Chain = preSelected
-    ? (PROTOCOL_TO_CHAIN[preSelected.networkProtocol] ?? 'eth')
-    : 'eth'
-  const defaultAsset: AssetSymbol = preSelected
-    ? (preSelected.symbolName as AssetSymbol)
-    : 'ETH'
+  const defaultChain: Chain = retryState?.chain
+    ?? (preSelected ? (PROTOCOL_TO_CHAIN[preSelected.networkProtocol] ?? 'eth') : 'eth')
+  const defaultAsset: AssetSymbol = (retryState?.asset ?? preSelected?.symbolName ?? 'ETH') as AssetSymbol
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<SendFormInput>({
     resolver: zodResolver(SendFormSchema),
-    defaultValues: { chain: defaultChain, asset: defaultAsset },
+    defaultValues: {
+      chain: defaultChain,
+      asset: defaultAsset,
+      toAddress: retryState?.toAddress ?? '',
+      amount: retryState?.amount ?? '',
+      destinationTag: retryState?.destinationTag ?? '',
+    },
   })
 
   const { data: assetsData } = useQuery({
@@ -112,7 +120,7 @@ export function Send() {
     }
     try {
       const fee = await api.post<FeeEstimate>('/tx/estimate', payload)
-      setPending(payload, fee, data.asset, currentAssetItem.network.name)
+      setPending(payload, fee, data.asset, currentAssetItem.network.name, data.chain as Chain)
       nav('/send/confirm', { state: { preSelected } })
     } catch (e) {
       setApiError(e instanceof Error ? e.message : '無法預估費用')
@@ -149,14 +157,32 @@ export function Send() {
           {/* Asset */}
           <div className="mb-[14px]">
             <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">資產</label>
-            <select
-              {...register('asset')}
-              className="w-full border border-line rounded-[10px] px-[13px] py-3 text-sm font-sans bg-white focus:outline-none focus:border-orange"
-            >
-              {(allSymbols.length > 0 ? allSymbols : [defaultAsset]).map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
+                <img
+                  src={`/api/icons/symbol/${selectedAsset}.png`}
+                  alt={selectedAsset}
+                  className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0"
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
+                <div className="flex-1">
+                  <b className="text-[14px]">{selectedAsset}</b>
+                </div>
+                {allSymbols.length > 1 && (
+                  <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path d="M3 4.5 6 7.5 9 4.5" />
+                  </svg>
+                )}
+              </div>
+              <select
+                {...register('asset')}
+                className="absolute inset-0 opacity-0 w-full cursor-pointer"
+              >
+                {(allSymbols.length > 0 ? allSymbols : [defaultAsset]).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Network */}

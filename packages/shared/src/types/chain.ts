@@ -33,6 +33,8 @@ export interface Transaction {
   toAddress: string
   txHash: string
   status: TxStatus
+  confirmedBlocks?: number
+  confirmationBlocks?: number
   fee?: string
   blockTime?: string
   createdAt: string

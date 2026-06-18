@@ -19,6 +19,8 @@ import {
 } from 'viem/chains'
 import { prisma } from '../db/client.js'
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
 const TRANSFER_EVENT = parseAbiItem(
   'event Transfer(address indexed from, address indexed to, uint256 value)',
 )
@@ -78,7 +80,8 @@ export class EthBlockSync {
     if (startBlock <= currentBlock) {
       console.log(`${tag} catching up blocks ${startBlock}–${currentBlock}`)
       for (let n = startBlock; n <= currentBlock; n++) {
-        await this.fetchAndProcess(n)
+        await this.fetchWithRetry(n)
+        if (n < currentBlock) await sleep(250) // throttle to stay within free-tier rate limits
       }
     }
 
@@ -172,6 +175,27 @@ export class EthBlockSync {
     if (this.fallbackTimer) {
       clearInterval(this.fallbackTimer)
       this.fallbackTimer = null
+    }
+  }
+
+  private async fetchWithRetry(blockNumber: bigint, maxAttempts = 6): Promise<void> {
+    let delay = 1_000
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await this.fetchAndProcess(blockNumber)
+        return
+      } catch (err: unknown) {
+        const status = (err as { status?: number }).status
+        if (status === 429 && attempt < maxAttempts) {
+          console.warn(
+            `[EthSync:${this.config.networkId}] rate limited (429), retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`,
+          )
+          await sleep(delay)
+          delay = Math.min(delay * 2, 30_000)
+        } else {
+          throw err
+        }
+      }
     }
   }
 
@@ -275,11 +299,12 @@ export class EthBlockSync {
       console.log(`[EthSync:${networkId}] confirmed ${upgraded.count} tx(s) at block ${block.number}`)
 
       for (const tx of toCredit) {
-        await prisma.userAsset.update({
+        await prisma.userAsset.upsert({
           where: {
             userId_networkId_symbolId: { userId: tx.userId, networkId, symbolId: tx.symbolId },
           },
-          data: { balance: { increment: tx.amount } },
+          create: { userId: tx.userId, networkId, symbolId: tx.symbolId, balance: tx.amount },
+          update: { balance: { increment: tx.amount } },
         })
         console.log(`[EthSync:${networkId}] credited ${tx.amount} → user ${tx.userId} symbolId=${tx.symbolId}`)
       }

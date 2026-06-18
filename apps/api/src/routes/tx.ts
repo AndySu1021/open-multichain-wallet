@@ -109,13 +109,48 @@ export async function txRoutes(app: FastifyInstance) {
       ...(asset?.contractAddress ? { contractAddress: asset.contractAddress, decimals: asset.decimals } : {}),
       ...(destinationTag !== undefined ? { destinationTag } : {}),
     }
-    const rawTx = await adapter.buildTransaction(params)
-    const signedTx = await keyManager.signTransaction(userId.toString(), chain, rawTx)
-    const txHash = await adapter.broadcastTransaction(signedTx)
+
+    let txHash: string
+    try {
+      const rawTx = await adapter.buildTransaction(params)
+      const signedTx = await keyManager.signTransaction(userId.toString(), chain, rawTx)
+      txHash = await adapter.broadcastTransaction(signedTx)
+    } catch (err: unknown) {
+      // Surface the actual RPC/chain error message instead of a generic 500.
+      const e = err as { details?: string; shortMessage?: string; message?: string }
+      const message = e.details ?? e.shortMessage ?? e.message ?? 'Transaction broadcast failed'
+      return reply.code(400).send({ ok: false, error: { code: 'BROADCAST_FAILED', message } })
+    }
 
     const tx = await prisma.transaction.create({
       data: { userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 0 },
     })
+
+    // Optimistically deduct sender's balance
+    await prisma.userAsset.updateMany({
+      where: { userId, networkId, symbolId },
+      data: { balance: { decrement: amount } },
+    })
+
+    // If recipient is also a platform user, create their pending receive record
+    const recipientWallet = await prisma.walletAddress.findFirst({
+      where: { networkId, address: toAddress },
+    })
+    if (recipientWallet && recipientWallet.userId !== userId) {
+      await prisma.transaction.create({
+        data: {
+          userId: recipientWallet.userId,
+          networkId,
+          symbolId,
+          type: 2,
+          fromAddress,
+          toAddress,
+          amount,
+          txHash,
+          status: 0,
+        },
+      })
+    }
 
     return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id } })
   })
@@ -184,13 +219,23 @@ export async function txRoutes(app: FastifyInstance) {
     const tx = await prisma.transaction.findFirst({
       where: { txHash: hash, userId },
       include: {
-        network: { select: { name: true, protocol: true, explorerUrl: true } },
+        network: { select: { name: true, protocol: true, explorerUrl: true, confirmationBlocks: true } },
         symbol: { select: { name: true } },
       },
     })
     if (!tx) {
       const err = Errors.NotFound('Transaction')
       return reply.code(err.statusCode).send({ ok: false, error: { code: err.code, message: err.message } })
+    }
+
+    let confirmedBlocks: number | undefined
+    const confirmationBlocks = tx.network.confirmationBlocks
+    if (tx.status === 0 && tx.blockNumber !== null) {
+      const cursor = await prisma.blockCursor.findUnique({ where: { networkId: tx.networkId } })
+      if (cursor) {
+        const diff = Number(cursor.blockNumber - tx.blockNumber) + 1
+        confirmedBlocks = Math.min(Math.max(diff, 0), confirmationBlocks)
+      }
     }
 
     return reply.send({
@@ -209,6 +254,8 @@ export async function txRoutes(app: FastifyInstance) {
         toAddress: tx.toAddress,
         txHash: tx.txHash,
         status: mapTxStatus(tx.status),
+        confirmedBlocks,
+        confirmationBlocks: tx.status === 0 ? confirmationBlocks : undefined,
         fee: tx.fee ?? undefined,
         blockTime: tx.blockTime?.toISOString(),
         createdAt: tx.createdAt.toISOString(),

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import type { NetworkItem } from '@fox-wallet/shared'
+import type { NetworkItem, AssetItem } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
 import { BottomNav } from '../components/ui/BottomNav.js'
 import { LoadingState } from '../components/ui/States.js'
@@ -24,6 +24,7 @@ function networkWarnText(protocol: string, allNetworks: NetworkItem[]): string {
 export function Receive() {
   const nav = useNavigate()
   const [networkId, setNetworkId] = useState<number | null>(null)
+  const [symbolId, setSymbolId] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
 
   const { data: networksData, isLoading: networksLoading } = useQuery({
@@ -32,8 +33,18 @@ export function Receive() {
     staleTime: 5 * 60_000,
   })
 
+  const { data: assetsData } = useQuery({
+    queryKey: ['assets'],
+    queryFn: () => api.get<{ assets: AssetItem[] }>('/assets'),
+    staleTime: 5 * 60_000,
+  })
+
   const networks = networksData?.networks ?? []
   const selected = networks.find((n) => n.id === networkId) ?? networks[0]
+
+  const allAssets: AssetItem[] = assetsData?.assets ?? []
+  const networkAssets = allAssets.filter((a) => a.network.id === selected?.id)
+  const selectedAsset = networkAssets.find((a) => a.symbol.id === symbolId) ?? networkAssets[0]
 
   const { data: addressData, isLoading: addressLoading, error: addressError } = useQuery({
     queryKey: ['address', selected?.id],
@@ -104,6 +115,42 @@ export function Receive() {
               </div>
             </div>
 
+            {/* Asset picker */}
+            {networkAssets.length > 0 && (
+              <div className="mb-4 text-left">
+                <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">資產</label>
+                <div className="relative">
+                  <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
+                    <img
+                      src={`/api/icons/symbol/${selectedAsset?.symbol.name}.png`}
+                      alt={selectedAsset?.symbol.name}
+                      className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                    <div className="flex-1">
+                      <b className="text-[14px]">{selectedAsset?.symbol.name ?? ''}</b>
+                    </div>
+                    {networkAssets.length > 1 && (
+                      <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        <path d="M3 4.5 6 7.5 9 4.5" />
+                      </svg>
+                    )}
+                  </div>
+                  {networkAssets.length > 1 && (
+                    <select
+                      value={selectedAsset?.symbol.id ?? ''}
+                      onChange={(e) => setSymbolId(Number(e.target.value))}
+                      className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                    >
+                      {networkAssets.map((a) => (
+                        <option key={a.symbol.id} value={a.symbol.id}>{a.symbol.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* QR code */}
             <div className="w-[180px] h-[180px] mx-auto my-4 rounded-[14px] border-[6px] border-white shadow flex items-center justify-center bg-white">
               {addressLoading ? (
@@ -125,7 +172,9 @@ export function Receive() {
               ) : null}
             </div>
 
-            <p className="text-ink-2 text-xs mb-1">你的 {selected?.name ?? ''} 地址</p>
+            <p className="text-ink-2 text-xs mb-1">
+              你的 {selectedAsset ? `${selectedAsset.symbol.name} (${selected?.name ?? ''})` : (selected?.name ?? '')} 地址
+            </p>
             {addressLoading ? (
               <div className="h-5 w-48 mx-auto bg-line-soft rounded animate-pulse" />
             ) : (

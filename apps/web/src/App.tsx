@@ -7,6 +7,7 @@ import { Dashboard } from './routes/Dashboard.js'
 import { Send } from './routes/Send.js'
 import { SendConfirm } from './routes/SendConfirm.js'
 import { SendDone } from './routes/SendDone.js'
+import { SendFail } from './routes/SendFail.js'
 import { Receive } from './routes/Receive.js'
 import { History } from './routes/History.js'
 import { TxDetail } from './routes/TxDetail.js'
@@ -38,6 +39,7 @@ export function App() {
       <Route path="/send" element={<RequireAuth><Send /></RequireAuth>} />
       <Route path="/send/confirm" element={<RequireAuth><SendConfirm /></RequireAuth>} />
       <Route path="/send/done/:hash" element={<RequireAuth><SendDone /></RequireAuth>} />
+      <Route path="/send/fail" element={<RequireAuth><SendFail /></RequireAuth>} />
       <Route path="/receive" element={<RequireAuth><Receive /></RequireAuth>} />
       <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
       <Route path="/tx/:hash" element={<RequireAuth><TxDetail /></RequireAuth>} />

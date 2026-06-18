@@ -65,7 +65,10 @@ export function TxDetail() {
                 ? 'bg-[#e9f7ee] text-green-700'
                 : 'bg-red-100 text-red-600'
             }`}>
-              ● {STATUS_LABEL[tx.status] ?? tx.status}
+              ●{' '}
+              {tx.status === 'pending' && tx.confirmedBlocks !== undefined && tx.confirmationBlocks
+                ? `${tx.confirmedBlocks}/${tx.confirmationBlocks} 區塊確認中`
+                : STATUS_LABEL[tx.status] ?? tx.status}
             </span>
 
             <div className="bg-[#fafbfc] border border-line-soft rounded-[12px] p-[14px] text-[13px] text-left">
