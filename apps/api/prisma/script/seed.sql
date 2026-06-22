@@ -1,3 +1,19 @@
+-- ── Symbols ───────────────────────────────────────────────────────────────────
+-- id 1 ETH | 2 BTC | 3 XRP | 4 BNB | 5 USDT | 6 USDC | 7 SOL | 8 ADA
+-- Must be inserted before network (network.fee_symbol_id references symbol.id)
+INSERT INTO symbol (id, name, status, image_url)
+VALUES (1, 'ETH',  1, '/icons/symbol/ETH.png'),
+       (2, 'BTC',  1, '/icons/symbol/BTC.png'),
+       (3, 'XRP',  1, '/icons/symbol/XRP.png'),
+       (4, 'BNB',  1, '/icons/symbol/BNB.png'),
+       (5, 'USDT', 1, '/icons/symbol/USDT.png'),
+       (6, 'USDC', 1, '/icons/symbol/USDC.png'),
+       (7, 'SOL',  1, '/icons/symbol/SOL.png'),
+       (8, 'ADA',  1, '/icons/symbol/ADA.png')
+ON CONFLICT (id) DO UPDATE SET
+  name      = EXCLUDED.name,
+  image_url = EXCLUDED.image_url;
+
 -- ── Networks ──────────────────────────────────────────────────────────────────
 -- id 1 Ethereum | 2 Bitcoin | 3 XRP Ledger | 4 Binance Smart Chain | 5 Solana | 6 Cardano
 --
@@ -55,21 +71,6 @@ ON CONFLICT (id) DO UPDATE SET
   fee_symbol_id      = EXCLUDED.fee_symbol_id;
   -- sync_enabled / node_ws_url / node_http_url intentionally NOT overwritten
   -- so admin-configured values survive a re-seed.
-
--- ── Symbols ───────────────────────────────────────────────────────────────────
--- id 1 ETH | 2 BTC | 3 XRP | 4 BNB | 5 USDT | 6 USDC | 7 SOL | 8 ADA
-INSERT INTO symbol (id, name, status, image_url)
-VALUES (1, 'ETH',  1, '/icons/symbol/ETH.png'),
-       (2, 'BTC',  1, '/icons/symbol/BTC.png'),
-       (3, 'XRP',  1, '/icons/symbol/XRP.png'),
-       (4, 'BNB',  1, '/icons/symbol/BNB.png'),
-       (5, 'USDT', 1, '/icons/symbol/USDT.png'),
-       (6, 'USDC', 1, '/icons/symbol/USDC.png'),
-       (7, 'SOL',  1, '/icons/symbol/SOL.png'),
-       (8, 'ADA',  1, '/icons/symbol/ADA.png')
-ON CONFLICT (id) DO UPDATE SET
-  name      = EXCLUDED.name,
-  image_url = EXCLUDED.image_url;
 
 -- ── Assets ────────────────────────────────────────────────────────────────────
 -- decimals: token precision used to convert raw on-chain amounts to display units
