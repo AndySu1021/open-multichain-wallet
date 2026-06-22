@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import type { NetworkItem, AssetItem } from '@fox-wallet/shared'
+import type { AssetItem } from '@fox-wallet/shared'
 import { api } from '../api/client.js'
 import { BottomNav } from '../components/ui/BottomNav.js'
 import { LoadingState } from '../components/ui/States.js'
@@ -16,40 +16,41 @@ const PROTOCOL_COLOR: Record<string, string> = {
   ADA: 'bg-[#0033ad]',
 }
 
-function networkWarnText(protocol: string, allNetworks: NetworkItem[]): string {
-  const others = allNetworks.filter((n) => n.protocol !== protocol).map((n) => n.name).join('、')
-  return `僅傳送對應此網路的資產到此地址。傳入 ${others} 資產將永久遺失。`
-}
-
 export function Receive() {
   const nav = useNavigate()
+  const [symbolName, setSymbolName] = useState<string | null>(null)
   const [networkId, setNetworkId] = useState<number | null>(null)
-  const [symbolId, setSymbolId] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const { data: networksData, isLoading: networksLoading } = useQuery({
-    queryKey: ['networks'],
-    queryFn: () => api.get<{ networks: NetworkItem[] }>('/networks'),
-    staleTime: 5 * 60_000,
-  })
-
-  const { data: assetsData } = useQuery({
+  const { data: assetsData, isLoading: assetsLoading } = useQuery({
     queryKey: ['assets'],
     queryFn: () => api.get<{ assets: AssetItem[] }>('/assets'),
     staleTime: 5 * 60_000,
   })
 
-  const networks = networksData?.networks ?? []
-  const selected = networks.find((n) => n.id === networkId) ?? networks[0]
-
   const allAssets: AssetItem[] = assetsData?.assets ?? []
-  const networkAssets = allAssets.filter((a) => a.network.id === selected?.id)
-  const selectedAsset = networkAssets.find((a) => a.symbol.id === symbolId) ?? networkAssets[0]
+  const allSymbols = [...new Set(allAssets.map((a) => a.symbol.name))]
+  const selectedSymbol = symbolName ?? allSymbols[0] ?? ''
+
+  const validNetworks = allAssets
+    .filter((a) => a.symbol.name === selectedSymbol)
+    .map((a) => a.network)
+    .filter((n, i, arr) => arr.findIndex((x) => x.id === n.id) === i)
+
+  const selectedNetwork = validNetworks.find((n) => n.id === networkId) ?? validNetworks[0]
+
+  // When asset changes, reset network if it no longer supports the selected asset
+  useEffect(() => {
+    if (!networkId) return
+    const isValid = validNetworks.some((n) => n.id === networkId)
+    if (!isValid) setNetworkId(null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSymbol])
 
   const { data: addressData, isLoading: addressLoading, error: addressError } = useQuery({
-    queryKey: ['address', selected?.id],
-    queryFn: () => api.get<{ networkId: number; address: string; memo?: string }>(`/wallet/address?networkId=${selected!.id}`),
-    enabled: !!selected,
+    queryKey: ['address', selectedNetwork?.id],
+    queryFn: () => api.get<{ networkId: number; address: string; memo?: string }>(`/wallet/address?networkId=${selectedNetwork!.id}`),
+    enabled: !!selectedNetwork,
   })
 
   function copy() {
@@ -79,77 +80,75 @@ export function Receive() {
       </div>
 
       <div className="screen-scroll overflow-y-auto flex-1 px-[18px] py-4 text-center">
-        {networksLoading ? (
-          <LoadingState label="載入網路中…" />
+        {assetsLoading ? (
+          <LoadingState label="載入資產中…" />
         ) : (
           <>
-            {/* Network picker */}
+            {/* Asset picker */}
             <div className="mb-4 text-left">
-              <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">網路（鏈）</label>
+              <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">資產</label>
               <div className="relative">
                 <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
-                  {selected?.imageUrl
-                    ? <img src={`/api${selected.imageUrl}`} className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0" />
-                    : <span className={`w-[26px] h-[26px] rounded-full flex-shrink-0 ${PROTOCOL_COLOR[selected?.protocol ?? ''] ?? 'bg-ink-2'}`} />
-                  }
+                  <img
+                    src={`/api/icons/symbol/${selectedSymbol}.png`}
+                    alt={selectedSymbol}
+                    className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0"
+                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  />
                   <div className="flex-1">
-                    <b className="text-[14px]">{selected?.name ?? ''}</b>
+                    <b className="text-[14px]">{selectedSymbol}</b>
                   </div>
-                  {networks.length > 1 && (
+                  {allSymbols.length > 1 && (
                     <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path d="M3 4.5 6 7.5 9 4.5" />
                     </svg>
                   )}
                 </div>
-                {networks.length > 1 && (
+                {allSymbols.length > 1 && (
                   <select
-                    value={selected?.id ?? ''}
-                    onChange={(e) => setNetworkId(Number(e.target.value))}
+                    value={selectedSymbol}
+                    onChange={(e) => setSymbolName(e.target.value)}
                     className="absolute inset-0 opacity-0 w-full cursor-pointer"
                   >
-                    {networks.map((n) => (
-                      <option key={n.id} value={n.id}>{n.name}</option>
+                    {allSymbols.map((s) => (
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 )}
               </div>
             </div>
 
-            {/* Asset picker */}
-            {networkAssets.length > 0 && (
-              <div className="mb-4 text-left">
-                <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">資產</label>
-                <div className="relative">
-                  <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
-                    <img
-                      src={`/api/icons/symbol/${selectedAsset?.symbol.name}.png`}
-                      alt={selectedAsset?.symbol.name}
-                      className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0"
-                      onError={(e) => { e.currentTarget.style.display = 'none' }}
-                    />
-                    <div className="flex-1">
-                      <b className="text-[14px]">{selectedAsset?.symbol.name ?? ''}</b>
-                    </div>
-                    {networkAssets.length > 1 && (
-                      <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
-                        <path d="M3 4.5 6 7.5 9 4.5" />
-                      </svg>
-                    )}
+            {/* Network picker */}
+            <div className="mb-4 text-left">
+              <label className="block text-[12.5px] font-semibold text-ink-2 mb-[6px]">網路（鏈）</label>
+              <div className="relative">
+                <div className="flex items-center gap-[10px] border border-line rounded-[12px] p-3 bg-white">
+                  {selectedNetwork?.imageUrl
+                    ? <img src={`/api${selectedNetwork.imageUrl}`} className="w-[26px] h-[26px] rounded-full object-cover flex-shrink-0" />
+                    : <span className={`w-[26px] h-[26px] rounded-full flex-shrink-0 ${PROTOCOL_COLOR[selectedNetwork?.protocol ?? ''] ?? 'bg-ink-2'}`} />
+                  }
+                  <div className="flex-1">
+                    <b className="text-[14px]">{selectedNetwork?.name ?? ''}</b>
                   </div>
-                  {networkAssets.length > 1 && (
-                    <select
-                      value={selectedAsset?.symbol.id ?? ''}
-                      onChange={(e) => setSymbolId(Number(e.target.value))}
-                      className="absolute inset-0 opacity-0 w-full cursor-pointer"
-                    >
-                      {networkAssets.map((a) => (
-                        <option key={a.symbol.id} value={a.symbol.id}>{a.symbol.name}</option>
-                      ))}
-                    </select>
+                  {validNetworks.length > 1 && (
+                    <svg className="w-3 h-3 opacity-50" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6">
+                      <path d="M3 4.5 6 7.5 9 4.5" />
+                    </svg>
                   )}
                 </div>
+                {validNetworks.length > 1 && (
+                  <select
+                    value={selectedNetwork?.id ?? ''}
+                    onChange={(e) => setNetworkId(Number(e.target.value))}
+                    className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                  >
+                    {validNetworks.map((n) => (
+                      <option key={n.id} value={n.id}>{n.name}</option>
+                    ))}
+                  </select>
+                )}
               </div>
-            )}
+            </div>
 
             {/* QR code */}
             <div className="w-[180px] h-[180px] mx-auto my-4 rounded-[14px] border-[6px] border-white shadow flex items-center justify-center bg-white">
@@ -173,7 +172,7 @@ export function Receive() {
             </div>
 
             <p className="text-ink-2 text-xs mb-1">
-              你的 {selectedAsset ? `${selectedAsset.symbol.name} (${selected?.name ?? ''})` : (selected?.name ?? '')} 地址
+              你的 {selectedSymbol}{selectedNetwork ? ` (${selectedNetwork.name})` : ''} 地址
             </p>
             {addressLoading ? (
               <div className="h-5 w-48 mx-auto bg-line-soft rounded animate-pulse" />
@@ -183,7 +182,7 @@ export function Receive() {
               </div>
             )}
 
-            {selected?.protocol === 'XRP' && (
+            {selectedNetwork?.protocol === 'XRP' && (
               <div className="mt-3 mx-auto inline-flex items-center gap-2 bg-[#f4f5f7] rounded-[8px] px-3 py-[6px]">
                 <span className="text-[12px] text-ink-2">Destination Tag</span>
                 {addressLoading ? (
@@ -215,10 +214,18 @@ export function Receive() {
             </div>
 
             {/* Warning */}
-            {selected && (
+            {selectedNetwork && validNetworks.length > 1 && (
               <div className="flex gap-2 bg-[#fef5e7] text-[#9a6700] rounded-[10px] p-3 text-xs leading-relaxed mt-[18px] text-left">
                 <span className="flex-shrink-0">⚠</span>
-                <span>{networkWarnText(selected.protocol, networks)}</span>
+                <span>
+                  僅傳送 {selectedSymbol} 到此地址。請確認使用 {selectedNetwork.name} 網路，傳入其他網路資產將永久遺失。
+                </span>
+              </div>
+            )}
+            {selectedNetwork && validNetworks.length === 1 && (
+              <div className="flex gap-2 bg-[#fef5e7] text-[#9a6700] rounded-[10px] p-3 text-xs leading-relaxed mt-[18px] text-left">
+                <span className="flex-shrink-0">⚠</span>
+                <span>請確認傳送的資產符合此網路，避免資產遺失。</span>
               </div>
             )}
           </>
