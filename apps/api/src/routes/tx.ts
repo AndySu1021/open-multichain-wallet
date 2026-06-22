@@ -132,26 +132,6 @@ export async function txRoutes(app: FastifyInstance) {
       data: { balance: { decrement: amount } },
     })
 
-    // If recipient is also a platform user, create their pending receive record
-    const recipientWallet = await prisma.walletAddress.findFirst({
-      where: { networkId, address: toAddress },
-    })
-    if (recipientWallet && recipientWallet.userId !== userId) {
-      await prisma.transaction.create({
-        data: {
-          userId: recipientWallet.userId,
-          networkId,
-          symbolId,
-          type: 2,
-          fromAddress,
-          toAddress,
-          amount,
-          txHash,
-          status: 0,
-        },
-      })
-    }
-
     return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id } })
   })
 
