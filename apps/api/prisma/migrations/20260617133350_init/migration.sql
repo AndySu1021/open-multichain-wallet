@@ -27,6 +27,8 @@ CREATE TABLE "network" (
     "node_ws_url" TEXT,
     "node_http_url" TEXT,
     "catchup_blocks" INTEGER NOT NULL DEFAULT 100,
+    "gas_fee" DECIMAL(36,18),
+    "fee_symbol_id" INTEGER,
 
     CONSTRAINT "network_pkey" PRIMARY KEY ("id")
 );
@@ -101,7 +103,7 @@ CREATE TABLE "wallet_address" (
 
 -- CreateTable
 CREATE TABLE "transaction" (
-    "id" TEXT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL,
     "network_id" INTEGER NOT NULL,
     "symbol_id" INTEGER NOT NULL,
@@ -194,6 +196,9 @@ ALTER TABLE "wallet_address" ADD CONSTRAINT "wallet_address_user_id_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "wallet_address" ADD CONSTRAINT "wallet_address_network_id_fkey" FOREIGN KEY ("network_id") REFERENCES "network"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "network" ADD CONSTRAINT "network_fee_symbol_id_fkey" FOREIGN KEY ("fee_symbol_id") REFERENCES "symbol"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

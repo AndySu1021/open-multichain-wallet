@@ -123,16 +123,25 @@ export async function txRoutes(app: FastifyInstance) {
     }
 
     const tx = await prisma.transaction.create({
-      data: { userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 0 },
+      data: {
+        userId, networkId, symbolId, type: 1, fromAddress, toAddress, amount, txHash, status: 0,
+        fee: network.gasFee?.toString() ?? null,
+      },
     })
 
-    // Optimistically deduct sender's balance
+    // Optimistically deduct sender's amount and gas fee
     await prisma.userAsset.updateMany({
       where: { userId, networkId, symbolId },
       data: { balance: { decrement: amount } },
     })
+    if (network.gasFee !== null && network.feeSymbolId !== null) {
+      await prisma.userAsset.updateMany({
+        where: { userId, networkId, symbolId: network.feeSymbolId },
+        data: { balance: { decrement: network.gasFee } },
+      })
+    }
 
-    return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id } })
+    return reply.code(201).send({ ok: true, data: { txHash, txId: tx.id.toString() } })
   })
 
   app.get('/tx/history', { preHandler: requireAuth }, async (request, reply) => {
@@ -168,7 +177,7 @@ export async function txRoutes(app: FastifyInstance) {
       ok: true,
       data: {
         items: items.map((t) => ({
-          id: t.id,
+          id: t.id.toString(),
           networkId: t.networkId,
           symbolId: t.symbolId,
           networkName: t.network.name,
@@ -221,7 +230,7 @@ export async function txRoutes(app: FastifyInstance) {
     return reply.send({
       ok: true,
       data: {
-        id: tx.id,
+        id: tx.id.toString(),
         networkId: tx.networkId,
         symbolId: tx.symbolId,
         networkName: tx.network.name,

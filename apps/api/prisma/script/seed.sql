@@ -13,26 +13,33 @@ INSERT INTO network (
   id, name, protocol, status, image_url, explorer_url,
   hd_derivation_path, hd_curve,
   confirmation_blocks, evm_chain_id,
-  sync_enabled, node_ws_url, node_http_url, catchup_blocks
+  sync_enabled, node_ws_url, node_http_url, catchup_blocks,
+  gas_fee, fee_symbol_id
 )
 VALUES
   (1, 'Ethereum',            'ERC20', 1, '/icons/network/ETH.png', 'https://sepolia.etherscan.io',
-   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12, 11155111, false, NULL, NULL, 100),
+   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12, 11155111, false, NULL, NULL, 100,
+   0.00042,  1),  -- fee in ETH  (symbol_id=1)
 
   (2, 'Bitcoin',             'BTC',   1, '/icons/network/BTC.png', 'https://blockstream.info/testnet',
-   $$m/44'/1'/0'/0/0$$,     'secp256k1',  6,     NULL, false, NULL, NULL, 100),
+   $$m/44'/1'/0'/0/0$$,     'secp256k1',  6,     NULL, false, NULL, NULL, 100,
+   0.00001,  2),  -- fee in BTC  (symbol_id=2)
 
   (3, 'XRP Ledger',          'XRP',   1, '/icons/network/XRP.png', 'https://testnet.xrpl.org',
-   $$m/44'/144'/0'/0/0$$,   'secp256k1',  1,     NULL, false, NULL, NULL, 100),
+   $$m/44'/144'/0'/0/0$$,   'secp256k1',  1,     NULL, false, NULL, NULL, 100,
+   0.000012, 3),  -- fee in XRP  (symbol_id=3)
 
   (4, 'Binance Smart Chain', 'BEP20', 1, '/icons/network/BNB.png', 'https://testnet.bscscan.com',
-   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12,       97, false, NULL, NULL, 100),
+   $$m/44'/60'/0'/0/0$$,    'secp256k1', 12,       97, false, NULL, NULL, 100,
+   0.000105, 4),  -- fee in BNB  (symbol_id=4)
 
   (5, 'Solana',              'SOL',   1, '/icons/network/SOL.png', 'https://explorer.solana.com/?cluster=testnet',
-   $$m/44'/501'/0'$$,        'ed25519', 32,     NULL, false, NULL, NULL, 100),
+   $$m/44'/501'/0'$$,        'ed25519', 32,     NULL, false, NULL, NULL, 100,
+   0.000005, 7),  -- fee in SOL  (symbol_id=7)
 
   (6, 'Cardano',             'ADA',   1, '/icons/network/ADA.png', 'https://preprod.cardanoscan.io',
-   $$m/1852'/1815'/0'/0/0$$, 'ed25519', 10,     NULL, false, NULL, NULL, 100)
+   $$m/1852'/1815'/0'/0/0$$, 'ed25519', 10,     NULL, false, NULL, NULL, 100,
+   0.17,     8)   -- fee in ADA  (symbol_id=8)
 
 ON CONFLICT (id) DO UPDATE SET
   name               = EXCLUDED.name,
@@ -43,7 +50,9 @@ ON CONFLICT (id) DO UPDATE SET
   hd_curve           = EXCLUDED.hd_curve,
   confirmation_blocks = EXCLUDED.confirmation_blocks,
   evm_chain_id       = EXCLUDED.evm_chain_id,
-  catchup_blocks     = EXCLUDED.catchup_blocks;
+  catchup_blocks     = EXCLUDED.catchup_blocks,
+  gas_fee            = EXCLUDED.gas_fee,
+  fee_symbol_id      = EXCLUDED.fee_symbol_id;
   -- sync_enabled / node_ws_url / node_http_url intentionally NOT overwritten
   -- so admin-configured values survive a re-seed.
 

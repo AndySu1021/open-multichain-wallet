@@ -25,12 +25,12 @@ model User {
 }
 
 model Network {
-  id                Int     @id @default(autoincrement())
-  name              String  @unique
-  protocol          String
-  status            Int     @default(1)
-  imageUrl          String  @map("image_url")
-  explorerUrl       String? @map("explorer_url")
+  id                 Int      @id @default(autoincrement())
+  name               String   @unique
+  protocol           String
+  status             Int      @default(1)
+  imageUrl           String   @map("image_url")
+  explorerUrl        String?  @map("explorer_url")
   hdDerivationPath   String?  @map("hd_derivation_path")
   hdCurve            String?  @map("hd_curve")
   confirmationBlocks Int      @default(12)    @map("confirmation_blocks")
@@ -39,6 +39,9 @@ model Network {
   nodeWsUrl          String?                  @map("node_ws_url")
   nodeHttpUrl        String?                  @map("node_http_url")
   catchupBlocks      Int      @default(100)   @map("catchup_blocks")
+  gasFee             Decimal? @map("gas_fee") @db.Decimal(36, 18)
+  feeSymbolId        Int?     @map("fee_symbol_id")
+  feeSymbol          Symbol?  @relation("NetworkFeeSymbol", fields: [feeSymbolId], references: [id])
 
   assets          Asset[]
   walletAddresses WalletAddress[]
@@ -54,10 +57,11 @@ model Symbol {
   status   Int    @default(1)
   imageUrl String @map("image_url")
 
-  assets       Asset[]
-  userAssets   UserAsset[]
-  transactions Transaction[]
-  quotations   Quotation[]
+  assets            Asset[]
+  userAssets        UserAsset[]
+  transactions      Transaction[]
+  quotations        Quotation[]
+  networkFeeSymbols Network[]    @relation("NetworkFeeSymbol")
 
   @@map("symbol")
 }
@@ -134,7 +138,7 @@ model WalletAddress {
 }
 
 model Transaction {
-  id          String    @id @default(cuid())
+  id          BigInt    @id @default(autoincrement())
   userId      BigInt    @map("user_id")
   networkId   Int       @map("network_id")
   symbolId    Int       @map("symbol_id")

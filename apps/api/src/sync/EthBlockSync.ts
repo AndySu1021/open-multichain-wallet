@@ -353,7 +353,7 @@ export class EthBlockSync {
 
     const pendingSends = await prisma.transaction.findMany({
       where: { networkId, type: 1, status: 0, blockNumber: null },
-      select: { id: true, txHash: true, userId: true },
+      select: { id: true, txHash: true },
     })
     if (pendingSends.length === 0) return
 
@@ -361,39 +361,19 @@ export class EthBlockSync {
     const landed = pendingSends.filter((tx) => blockTxHashes.has(tx.txHash.toLowerCase()))
     if (landed.length === 0) return
 
-    // Fetch native asset symbolId from DB so it reflects the current state of the asset table.
-    const nativeAsset = await prisma.asset.findFirst({
-      where: { networkId, contractAddress: null, status: 1 },
-      select: { symbolId: true },
-    })
-
     for (const tx of landed) {
       const receipt = await httpClient.getTransactionReceipt({
         hash: tx.txHash as `0x${string}`,
       })
       const failed = receipt.status === 'reverted'
 
-      // Actual fee paid = gas consumed × price per gas unit.
-      // This applies to both native ETH and ERC20 sends; gas is always paid in ETH.
-      const feeWei = receipt.gasUsed * receipt.effectiveGasPrice
-      const feeEth = formatEther(feeWei)
-
       await prisma.transaction.update({
         where: { id: tx.id },
-        data: { blockNumber: block.number, blockHash: block.hash, status: failed ? 2 : 0, fee: feeEth },
+        data: { blockNumber: block.number, blockHash: block.hash, blockTime: new Date(), status: failed ? 2 : 0 },
       })
 
-      // Deduct the gas fee from the sender's native ETH balance.
-      // The token amount was already deducted optimistically at send time; only the fee was missing.
-      if (nativeAsset) {
-        await prisma.userAsset.updateMany({
-          where: { userId: tx.userId, networkId, symbolId: nativeAsset.symbolId },
-          data: { balance: { decrement: feeEth } },
-        })
-      }
-
       console.log(
-        `[EthSync:${networkId}] outgoing tx ${tx.txHash} landed in block ${block.number} (${failed ? 'failed' : 'pending confirmation'}, fee=${feeEth} ETH)`,
+        `[EthSync:${networkId}] outgoing tx ${tx.txHash} landed in block ${block.number} (${failed ? 'failed' : 'pending confirmation'})`,
       )
     }
   }
