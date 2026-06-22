@@ -21,6 +21,12 @@ CREATE TABLE "network" (
     "explorer_url" TEXT,
     "hd_derivation_path" TEXT,
     "hd_curve" TEXT,
+    "confirmation_blocks" INTEGER NOT NULL DEFAULT 12,
+    "evm_chain_id" INTEGER,
+    "sync_enabled" BOOLEAN NOT NULL DEFAULT false,
+    "node_ws_url" TEXT,
+    "node_http_url" TEXT,
+    "catchup_blocks" INTEGER NOT NULL DEFAULT 100,
 
     CONSTRAINT "network_pkey" PRIMARY KEY ("id")
 );
@@ -62,6 +68,7 @@ CREATE TABLE "asset" (
     "symbol_id" INTEGER NOT NULL,
     "network_id" INTEGER NOT NULL,
     "contract_address" TEXT,
+    "decimals" INTEGER NOT NULL DEFAULT 18,
     "status" INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT "asset_pkey" PRIMARY KEY ("id")
@@ -105,11 +112,24 @@ CREATE TABLE "transaction" (
     "tx_hash" TEXT NOT NULL,
     "status" INTEGER NOT NULL DEFAULT 0,
     "fee" TEXT,
+    "block_number" BIGINT,
+    "block_hash" TEXT,
     "block_time" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "transaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "block_cursor" (
+    "id" SERIAL NOT NULL,
+    "network_id" INTEGER NOT NULL,
+    "block_number" BIGINT NOT NULL,
+    "block_hash" TEXT NOT NULL,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "block_cursor_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -141,6 +161,12 @@ CREATE INDEX "transaction_user_id_network_id_idx" ON "transaction"("user_id", "n
 
 -- CreateIndex
 CREATE INDEX "transaction_tx_hash_idx" ON "transaction"("tx_hash");
+
+-- CreateIndex
+CREATE INDEX "transaction_network_id_block_number_idx" ON "transaction"("network_id", "block_number");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "block_cursor_network_id_key" ON "block_cursor"("network_id");
 
 -- AddForeignKey
 ALTER TABLE "quotation" ADD CONSTRAINT "quotation_symbol_id_fkey" FOREIGN KEY ("symbol_id") REFERENCES "symbol"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

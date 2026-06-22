@@ -15,7 +15,7 @@
     "db:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "docker exec -i postgres psql -U admin -d postgres < prisma/script/seed.sql"
+    "seed": "sh -c 'docker exec -i postgres psql -U admin -d postgres < prisma/script/seed.sql'"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
